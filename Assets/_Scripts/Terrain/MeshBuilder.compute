@@ -1,0 +1,57 @@
+#pragma kernel CSMain
+
+RWStructuredBuffer<float3> vertices;
+RWStructuredBuffer<float3> normals;
+RWStructuredBuffer<float2> uv;
+RWStructuredBuffer<int> triangles;
+
+float width;
+float length;
+uint resolution;
+
+[numthreads(64,1,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    /*
+            // Vertices & Normals & UVs
+    Vector3[] verts = new Vector3[resolution * resolution];
+    Vector3[] normals = new Vector3[resolution * resolution];
+    Vector2[] uv = new Vector2[resolution * resolution];
+
+    int vertIndex = 0;
+    for (float y = id.x; y < resolution * id.x; y++)
+    {
+        for (float x = id.x; x < resolution * id.x; x++)
+        {
+            float relativeX = x / (resolution - 1);
+            float relativeY = y / (resolution - 1);
+            verts[vertIndex] = new Vector3(relativeX * width, 0f, relativeY * length);
+            normals[vertIndex] = Vector3.up;
+            uv[vertIndex] = new Vector2(relativeX, relativeY);
+            vertIndex++;
+        }
+    }
+
+        // Triangles
+    int triangleCount = (resolution - 1) * 2 * (resolution - 1);
+    int[] tris = new int[ triangleCount * 3];
+    int skipRow = 0;
+    for (int i = 0, triIndex = 0; i < tris.Length; i += 6)
+    {
+        if (skipRow + 1 == resolution)
+        {
+            skipRow = 0;
+            triIndex++;
+        }
+        tris[i] = triIndex;
+        tris[i + 1] = triIndex + resolution + 1;
+        tris[i + 2] = triIndex + 1;
+
+        tris[i + 3] = triIndex;
+        tris[i + 4] = triIndex + resolution;
+        tris[i + 5] = triIndex + resolution + 1;
+        triIndex++;
+        skipRow++;
+    }
+*/
+}
