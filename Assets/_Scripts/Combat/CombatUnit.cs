@@ -12,6 +12,7 @@ public class CombatUnit : MonoBehaviour
     public float ATB = 0f;
     private bool attacker = false;
     public bool Attacker => attacker;
+    public bool retaliate = false;
 
     private Action<CombatUnit> onUnitUpdateUI;
     private UnitContainer unit;

@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.U2D;
 
 public class CombatManager : MonoBehaviour
 {
@@ -12,6 +11,7 @@ public class CombatManager : MonoBehaviour
     [SerializeField] private Player defendingPlayer;
     [SerializeField] private HeroMount attackingHero = null;
     [SerializeField] private HeroMount defendingHero = null;
+    [SerializeField] private float unitSpeed = 5f;
 
     private CombatUnit actingUnit = null;
     private List<CombatUnit> combatUnits = new List<CombatUnit>();
@@ -21,10 +21,13 @@ public class CombatManager : MonoBehaviour
     private int playersReady = 0;
     private bool waitingForResponse = false;
     private float time = 0f;
-    public float Time => time;
+    private int round = 0;
+    public float GameTime => time;
 
     public void StartMatch(HeroMount attacker, HeroMount defender)
     {
+        round = 1;
+        time = 0f;
         state = CombatState.Preparation;
 
         defender.SpawnStarterUnit();
@@ -106,6 +109,16 @@ public class CombatManager : MonoBehaviour
                 }
             }
             time += 0.1f;
+            if(time >= 1f)
+            {
+                round++;
+                time -= 1f;
+                foreach(CombatUnit unit in combatUnits)
+                {
+                    unit.retaliate = true;
+                }
+                Debug.Log("new round " + round);
+            }
             if (actingUnit)
             {
                 PlayerTurnSetup();
@@ -144,43 +157,98 @@ public class CombatManager : MonoBehaviour
             pressDirection = input.direction;
             break;
         }
-        CombatTile previousTile = map.GetUnitTile(actingUnit.Container);
-        previousTile.ClearTile();
+
         if (selectedTile.Unit && selectedTile.Unit.IsOpponent(actingUnit))
         {
-            AttackUnit(actingUnit, selectedTile.Unit, pressDirection, activeTiles);
+            yield return Attack(actingUnit, selectedTile.Unit, pressDirection, activeTiles);
         }
         else
         {
-            selectedTile.SetUnit(actingUnit);
-            selectedTile.UpdateUnitTransform();
+            yield return MoveUnit(actingUnit, selectedTile);
         }
 
         actingUnit.ATB = Random.Range(0f, 0.25f); // should depend on luck or morale?
         actingUnit = null;
         ProgressATB();
     }
+    private IEnumerator MoveUnit(CombatUnit unit, CombatTile tile)
+    {
+        CombatTile previousTile = map.GetUnitTile(unit.Container);
+        previousTile.ClearTile();
 
-    private void AttackUnit(CombatUnit attackingUnit, CombatUnit defendingUnit, Vector2 pressDirection, List<CombatTile> activeTiles)
+        Queue<CombatTile> path = new Queue<CombatTile>();
+        path.Enqueue(tile);
+        while(path.Count > 0)
+        {
+            CombatTile nextTile = path.Dequeue();
+
+            Vector3 startPos = unit.transform.position;
+            Vector3 direction = nextTile.transform.position - unit.transform.position;
+            direction.y = 0f;
+            unit.transform.forward = direction.normalized;
+            float power = 0f;
+            while(power < 1f)
+            {
+                unit.transform.position = Vector3.Lerp(startPos, nextTile.transform.position, power);
+                unit.OnUnitUpdateUI();
+                power += Time.deltaTime * unitSpeed;
+                yield return null;
+            }
+            unit.transform.position = nextTile.transform.position;
+        }
+        tile.SetUnit(unit);
+        tile.UpdateUnitTransform();
+        yield return null;
+    }
+    private IEnumerator Attack(CombatUnit attackingUnit, CombatUnit defendingUnit, Vector2 pressDirection, List<CombatTile> activeTiles)
     {
         CombatTile adjacentTile = map.GetAdjacentTileInDirectionWithin(map.GetUnitTile(defendingUnit.Container),activeTiles, pressDirection);
-        
-        adjacentTile.SetUnit(attackingUnit);
-        adjacentTile.UpdateUnitTransform();
 
-        int randomDamage = Random.Range(attackingUnit.Container.Data.DamageRange.x, attackingUnit.Container.Data.DamageRange.y + 1);
-        int damage = randomDamage * attackingUnit.Container.Count;
+        yield return MoveUnit(attackingUnit, adjacentTile);
 
-        int defendersLeft = defendingUnit.TakeDamage(damage);
+        int attackingDamage = GetDamage(attackingUnit, defendingUnit);
+        Debug.Log("attacking " + defendingUnit.name + " with damage " + attackingDamage);
+
+        int defendersLeft = defendingUnit.TakeDamage(attackingDamage);
         if(defendersLeft <= 0)
         {
             DestroyUnit(defendingUnit);
             CheckCombatState();
+            yield break;
+        }
+        yield return new WaitForSeconds(0.5f);
+
+        if (defendingUnit.retaliate)
+        {
+            defendingUnit.retaliate = false;
+            int retaliatingDamage = GetDamage(defendingUnit, attackingUnit);
+            Debug.Log("retaliating on " + attackingUnit.name + " with damage " + retaliatingDamage);
+
+            int attackersLeft = attackingUnit.TakeDamage(retaliatingDamage);
+            if (attackersLeft <= 0)
+            {
+                DestroyUnit(defendingUnit);
+                CheckCombatState();
+            }
+        }
+
+        yield return new WaitForSeconds(0.5f);
+        // attack done
+    }
+    private int GetDamage(CombatUnit attackingUnit, CombatUnit defendingUnit)
+    {
+        int randomDamage = Random.Range(attackingUnit.Container.Data.DamageRange.x, attackingUnit.Container.Data.DamageRange.y + 1);
+        int damage = attackingUnit.Container.Count * randomDamage;
+
+        if (attackingUnit.Container.Data.Attack >= defendingUnit.Container.Data.Defense)
+        {
+            damage = (int)Mathf.Floor(damage * (1 + 0.05f * (attackingUnit.Container.Data.Attack - defendingUnit.Container.Data.Defense)));
         }
         else
         {
-            // if defenders can they do counterattack
+            damage = (int)Mathf.Floor(damage / (1 + 0.05f * (defendingUnit.Container.Data.Defense - attackingUnit.Container.Data.Attack)));
         }
+        return damage;
     }
     private void DestroyUnit(CombatUnit unit)
     {

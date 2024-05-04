@@ -51,6 +51,7 @@ public class CombatTile : MonoBehaviour
     public void ShowUnitPlaceHolder(CombatUnit unit)
     {
         unit.transform.position = transform.position;
+        unit.transform.rotation = unit.Attacker ? Quaternion.Euler(0f, 90f, 0f) : Quaternion.Euler(0f, -90f, 0f);
         unit.gameObject.SetActive(true);
     }
     public void UpdateUnitTransform()
@@ -58,6 +59,7 @@ public class CombatTile : MonoBehaviour
         unit.transform.position = transform.position;
         unit.gameObject.SetActive(true);
         unit.OnUnitUpdateUI();
+        unit.transform.rotation = unit.Attacker ? Quaternion.Euler(0f, 90f, 0f) : Quaternion.Euler(0f, -90f, 0f);
     }
     public void SetUnit(CombatUnit unit)
     {

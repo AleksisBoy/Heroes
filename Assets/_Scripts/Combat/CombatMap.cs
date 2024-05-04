@@ -348,19 +348,9 @@ public class CombatMap : MonoBehaviour
         
         return adjacentTile;
     }
-    // Setters
-    public void AddActionOnUnitRemove(Action<CombatUnit> action)
+    public Queue<CombatTile> GetPathToTile(CombatTile startingTile, CombatTile endingTile, List<CombatTile> tileRange)
     {
-        onRemoveUnit += action;
-    }
-    public List<CombatTile> ActivateColomns(int[] colomns)
-    {
-        List<CombatTile> tilesActive = GetTilesByColomns(colomns);
-        foreach(CombatTile tile in tilesActive)
-        {
-            tile.Actived();
-        }
-        return tilesActive;
+        return null;
     }
     public List<CombatTile> GetTilesByColomns(int[] colomns)
     {
@@ -409,6 +399,20 @@ public class CombatMap : MonoBehaviour
     public CombatTile GetByCoors(Vector2Int coordinates)
     {
         return tiles.FirstOrDefault(obj => obj.Coordinates == coordinates);
+    }
+    // Setters
+    public void AddActionOnUnitRemove(Action<CombatUnit> action)
+    {
+        onRemoveUnit += action;
+    }
+    public List<CombatTile> ActivateColomns(int[] colomns)
+    {
+        List<CombatTile> tilesActive = GetTilesByColomns(colomns);
+        foreach (CombatTile tile in tilesActive)
+        {
+            tile.Actived();
+        }
+        return tilesActive;
     }
 }
 public struct CombatPath
