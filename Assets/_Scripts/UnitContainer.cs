@@ -17,5 +17,9 @@ public class UnitContainer
         this.count = count;
         this.player = player;
     }
+    public void DecreaseCount()
+    {
+        count--;
+    }
     public string DebugName { get { return unit.name + " " + count; } }
 }

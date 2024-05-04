@@ -52,7 +52,7 @@ public class UnitBar : MonoBehaviour
 
         if (map.IsUnitOnMapPrepare(currentUnit, attacker))
         {
-            map.RemoveUnitPrepare(currentUnit.Container);
+            map.RemoveUnitPrepare(currentUnit.Container, attacker);
         }
         currentUnit.gameObject.SetActive(false);
     }
@@ -100,7 +100,7 @@ public class UnitBar : MonoBehaviour
 
         if(currentTile.Unit != null)
         {
-            map.RemoveUnitPrepare(currentTile.Unit.Container);
+            map.RemoveUnitPrepare(currentTile.Unit.Container, attacker);
         }
         if (attacker) map.AddAttackerUnitOnMapPrepare(currentUnit, currentTile);
         else map.AddDefenderUnitOnMapPrepare(currentUnit, currentTile);

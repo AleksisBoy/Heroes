@@ -45,7 +45,7 @@ public class UnitCountUI : MonoBehaviour
     {
         RectTransform rt = (RectTransform)transform;
 
-        Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hitInfo);
+        //Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hitInfo);
         rt.anchoredPosition = Camera.main.WorldToScreenPoint(worldPos);
     }
 }

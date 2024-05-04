@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class CombatPreparation : MonoBehaviour
 {
+    [SerializeField] private CanvasUnitUtility canvasUnitUtility = null;
     [SerializeField] private UnitBar unitBar = null;
     [SerializeField] private float rotationSpeed = 20f;
 
@@ -17,6 +18,7 @@ public class CombatPreparation : MonoBehaviour
         this.manager = manager;
         this.map = map;
         playerReady = false;
+        canvasUnitUtility.SetPlayer(hero.Player);
 
         gameObject.SetActive(true);
 

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.XR;
 
 public class CombatMap : MonoBehaviour
 {
@@ -30,6 +31,11 @@ public class CombatMap : MonoBehaviour
 {
         new Vector2Int(1, 0), new Vector2Int(0, -1), new Vector2Int(-1, 0), new Vector2Int(0, 1),
         new Vector2Int(-1, 1), new Vector2Int(1, 1), new Vector2Int(1, -1), new Vector2Int(-1, -1)
+    });
+    private static ReadOnlyCollection<Vector2Int> DirectionsAdjacent { get; } = new ReadOnlyCollection<Vector2Int>(new[]
+{
+        new Vector2Int(-1, -1), new Vector2Int(0, -1), new Vector2Int(1, -1), new Vector2Int(1, 0),
+        new Vector2Int(1, 1), new Vector2Int(0, 1), new Vector2Int(-1, 1), new Vector2Int(-1, 0)
     });
     private void Start()
     {
@@ -79,7 +85,7 @@ public class CombatMap : MonoBehaviour
         defenderPrepareUnits.Add(unit);
         tile.SetUnit(unit);
     }
-    public void RemoveUnitPrepare(UnitContainer unit)
+    public void RemoveUnitPrepare(UnitContainer unit, bool attacker)
     {
         CombatTile tile = GetUnitTile(unit);
         if(tile == null)
@@ -87,7 +93,15 @@ public class CombatMap : MonoBehaviour
             Debug.LogWarning("Did not find tile for unit " + unit.DebugName);
             return;
         }
-        attackerPrepareUnits.Remove(tile.Unit);
+
+        if (attacker)
+        {
+            attackerPrepareUnits.Remove(tile.Unit);
+        }
+        else
+        {
+            defenderPrepareUnits.Remove(tile.Unit);
+        }
         if (onRemoveUnit != null) onRemoveUnit(tile.Unit);
         Destroy(tile.Unit.gameObject);
         tile.ClearTile();
@@ -133,6 +147,28 @@ public class CombatMap : MonoBehaviour
             GetUnitTile(unit.Container).UpdateUnitTransform();
         }
     }
+    public void RemoveUnit(CombatUnit unit)
+    {
+        CombatTile tile = GetUnitTile(unit.Container);
+        if (tile == null)
+        {
+            Debug.LogWarning("Did not find tile for unit " + unit.Container.DebugName);
+            return;
+        }
+
+        if (attackerUnits.Contains(unit)) attackerUnits.Remove(unit);
+        else if(defenderUnits.Contains(unit)) defenderUnits.Remove(unit);
+        else
+        {
+            Debug.LogError("NO UNIT TO BE REMOVE NO DATA");
+            return;
+        }
+
+        if (onRemoveUnit != null) onRemoveUnit(tile.Unit);
+        Destroy(tile.Unit.gameObject);
+        tile.ClearTile();
+        tile.Actived();
+    }
 
     // Getters
     public CombatTile GetUnitTile(UnitContainer unit)
@@ -174,6 +210,9 @@ public class CombatMap : MonoBehaviour
         list.AddRange(defenderUnits);
         return list;
     }
+
+    public List<CombatUnit> AttackerUnits => attackerUnits;
+    public List<CombatUnit> DefenderUnits => defenderUnits;
     public List<CombatTile> GetTilesAroundTile(CombatTile tileBegin, int radius)
     {
         List<CombatTile> tilesChecked = new List<CombatTile>();
@@ -213,10 +252,102 @@ public class CombatMap : MonoBehaviour
         {
             tile.tempOrder = 0;
         }
-        tilesActive.Remove(tileBegin);
+        //tilesActive.Remove(tileBegin);
         return tilesActive;
     }
+    public List<CombatTile> GetEnemyUnitsTilesFor(Player player, List<CombatTile> activeTiles)
+    {
+        List<CombatTile> enemyTiles = new List<CombatTile>();
+        List<CombatTile> checkedTiles = new List<CombatTile>();
+        foreach (CombatTile tile in activeTiles)
+        {
+            for(int i = 0; i < DirectionsPathfind.Count; i++)
+            {
+                CombatTile checkingTile = GetByCoors(tile.Coordinates.x + DirectionsPathfind[i].x, tile.Coordinates.y + DirectionsPathfind[i].y);
+                if (!checkingTile) continue;
 
+                if (activeTiles.Contains(checkingTile))
+                {
+                    checkedTiles.Add(checkingTile);
+                    continue;
+                }
+                if (checkedTiles.Contains(checkingTile))
+                {
+                    continue;
+                }
+                if (checkingTile.Unit && checkingTile.Unit.IsOpponent(player))
+                {
+                    checkedTiles.Add(checkingTile);
+                    enemyTiles.Add(checkingTile);
+                }
+            }
+        }
+        return enemyTiles;
+    }
+    public CombatTile GetAdjacentTileInDirectionWithin(CombatTile centerTile, List<CombatTile> tileRange, Vector2 direction)
+    {
+        float angle = (Mathf.Atan2(direction.y, direction.x) + Mathf.PI) / (2 * Mathf.PI); // value of 0 to 1
+        CombatTile adjacentTile = null;
+        float currentValue = 0.0625f;
+        int i = 0;
+        while (adjacentTile == null)
+        {
+            bool left = false;
+            float topValue = currentValue + 0.125f;
+            if (topValue > 1f) topValue -= 1f;
+            if(currentValue >= 0.9375f || currentValue < 0.0625f)
+            {
+                i = 7;
+                left = true;
+            }
+            if ((angle >= currentValue && angle < topValue) || left)
+            {
+                if (left) left = false;
+                Debug.Log(i);
+                CombatTile tile = GetByCoors(centerTile.Coordinates.x + DirectionsAdjacent[i].x, centerTile.Coordinates.y + DirectionsAdjacent[i].y);
+                if (tile && tileRange.Contains(tile) && !tile.Unit)
+                {
+                    adjacentTile = tile;
+                    break;
+                }
+                else
+                {
+                    // lowest distance to closest and active tile
+                    float diff1 = Mathf.Abs(angle - currentValue);
+                    float diff2 = Mathf.Abs(angle - topValue);
+                    if (diff1 < diff2)
+                    {
+                        angle -= 0.125f;
+                        if (angle < 0f) angle += 1f;
+                        currentValue -= 0.125f;
+                        if (currentValue < 0f) currentValue += 1f;
+                        if (--i < 0) i = 7;
+                    }
+                    else
+                    {
+                        angle += 0.125f;
+                        if(angle > 1f) angle -= 1f;
+                        currentValue += 0.125f;
+                        if (currentValue > 1f) currentValue -= 1f;
+
+                        if (++i > 7) i = 0;
+                    }
+                    //i = 0;
+                    //currentValue = 0.0625f;
+                    continue;
+                }
+            }
+            currentValue += 0.125f;
+            if (currentValue > 1f) currentValue -= 1f;
+            if (++i > 7)
+            {
+                Debug.LogError("NO ADJACENT TILES");
+                break;
+            }
+        }
+        
+        return adjacentTile;
+    }
     // Setters
     public void AddActionOnUnitRemove(Action<CombatUnit> action)
     {

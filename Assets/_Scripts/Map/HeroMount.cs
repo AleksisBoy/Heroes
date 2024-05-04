@@ -153,4 +153,10 @@ public class HeroMount : MapObject
         }
         return null;
     }
+
+    // Debug
+    public void Debug_SetPlayer(Player player)
+    {
+        this.player = player;
+    }
 }

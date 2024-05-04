@@ -8,6 +8,7 @@ public class CombatMainState : MonoBehaviour
 
     protected CombatMap map = null;
     protected CombatTile selectedTile = null;
+    private Vector2 direction;
     protected List<CombatTile> activeTiles = null;
     protected bool isActive = false;
     protected virtual void Update()
@@ -16,19 +17,28 @@ public class CombatMainState : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
-            Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hitInfo);
-            if (hitInfo.transform == null) return;
+            var selectTile = canvasUnitUtility.SelectTileOnPointer();
 
-            CombatTile tile = map.GetTileInPosition(hitInfo.point);
-            if(activeTiles.Contains(tile)) selectedTile = tile;
+            direction = selectTile.Item2;
+            if(activeTiles.Contains(selectTile.Item1)) selectedTile = selectTile.Item1;
+        }
+        else if (Input.GetMouseButtonDown(1))
+        {
+            canvasUnitUtility.SetUnitPopup();
+        }
+        else if (Input.GetMouseButtonUp(1))
+        {
+            canvasUnitUtility.DisableUnitPopup();
         }
     }
-    public virtual void StartCombat(CombatMap map)
+    public virtual void StartCombat(CombatMap map, Player player)
     {
         this.map = map;
         selectedTile = null;
         gameObject.SetActive(true);
-        foreach(CombatUnit unit in map.GetAllUnits())
+        List<CombatUnit> allUnits = map.GetAllUnits();
+        canvasUnitUtility.SetAllUnits(allUnits);
+        foreach(CombatUnit unit in allUnits)
         {
             canvasUnitUtility.UpdateUnitCount(unit, map);
         }
@@ -46,6 +56,10 @@ public class CombatMainState : MonoBehaviour
     public CombatTile GetSelectedTile()
     {
         return selectedTile;
+    }
+    public Vector2 GetSelectedTileDirection()
+    {
+        return direction;
     }
 
 }

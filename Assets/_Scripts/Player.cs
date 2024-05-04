@@ -56,6 +56,8 @@ public class Player : MonoBehaviour
             return;
         }
 
+        hero.Debug_SetPlayer(this);
+
         if (currentState != null) currentState.SetActive(false);
         combatPreparation.StartPreparation(manager, hero, map, attacker);
         currentState = combatPreparation.gameObject;
@@ -63,7 +65,7 @@ public class Player : MonoBehaviour
     public virtual void StartCombatMainState(CombatMap combatMap)
     {
         if (currentState != null) currentState.SetActive(false);
-        combatMainState.StartCombat(combatMap);
+        combatMainState.StartCombat(combatMap, this);
         currentState = combatMainState.gameObject;
     }
     public virtual void CombatTurnSetup(CombatMap combatMap, List<CombatTile> activeTiles)
@@ -75,7 +77,7 @@ public class Player : MonoBehaviour
             tile.Actived();
         }
     }
-    public virtual IEnumerator<CombatTile> CombatTurnInput()
+    public virtual IEnumerator<CombatPlayerTurnInput> CombatTurnInput()
     {
         bool madeTurn = false;
         while (!madeTurn)
@@ -86,10 +88,16 @@ public class Player : MonoBehaviour
                 madeTurn = true;
                 combatMainState.SetActive(null, false);
                 combatMainState.DeactivateTiles();
-                yield return selectedTile;
+                yield return new CombatPlayerTurnInput(selectedTile, combatMainState.GetSelectedTileDirection());
             }
             yield return null;
         }
+    }
+    public virtual void StartCombatEndingState()
+    {
+        if (currentState != null) currentState.SetActive(false);
+        //combatMainState.StartCombat(combatMap, this);
+        currentState = combatMainState.gameObject;
     }
     public bool IsAllyHero(HeroMount hero)
     {

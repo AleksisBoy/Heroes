@@ -7,6 +7,7 @@ public class Unit : ScriptableObject
 {
     [SerializeField] private Sprite unitSprite = null;
     [SerializeField] private Mesh unitMesh = null;
+    [Header("Attributes")]
     [SerializeField] private int attack = 1;
     [SerializeField] private int defense = 1;
     [SerializeField] private int healthPoints = 10;
@@ -16,11 +17,15 @@ public class Unit : ScriptableObject
 
     public Sprite Sprite { get { return unitSprite; } }
     public Mesh Mesh { get { return unitMesh; } }
+
+    // Attributes
     public int Attack { get { return attack; } }
     public int Defense { get { return defense; } }
     public int HP { get { return healthPoints; } }
     public int Speed { get { return speed; } }
     public int Initiative { get { return initiative; } }
     public Vector2Int DamageRange {get { return damageRange; } }
+
+
 
 }

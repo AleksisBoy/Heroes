@@ -255,6 +255,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: CombatPreparation
       objectReference: {fileID: 0}
+    - target: {fileID: 6202014987828107668, guid: 2b608a7d7d536fd459a089e3b5f3b6fe, type: 3}
+      propertyPath: canvasUnitUtility
+      value: 
+      objectReference: {fileID: 653516688959130716}
     - target: {fileID: 7757896616384192363, guid: 2b608a7d7d536fd459a089e3b5f3b6fe, type: 3}
       propertyPath: canvasUnitUtility
       value: 

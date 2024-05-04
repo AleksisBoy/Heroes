@@ -7,14 +7,14 @@ public class ArtificialPlayer : Player
     public override void StartCombatMainState(CombatMap combatMap)
     {
         if (currentState.activeSelf) currentState.SetActive(false); 
-        combatMainState.StartCombat(combatMap);
+        combatMainState.StartCombat(combatMap, this);
         currentState = combatMainState.gameObject;
     }
     public override void CombatTurnSetup(CombatMap combatMap, List<CombatTile> activeTiles)
     {
         combatMainState.SetActive(activeTiles, true);
     }
-    public override IEnumerator<CombatTile> CombatTurnInput()
+    public override IEnumerator<CombatPlayerTurnInput> CombatTurnInput()
     {
         bool madeTurn = false;
         while (!madeTurn)
@@ -25,7 +25,7 @@ public class ArtificialPlayer : Player
                 madeTurn = true;
                 combatMainState.SetActive(null, false);
                 combatMainState.DeactivateTiles();
-                yield return selectedTile;
+                yield return new CombatPlayerTurnInput(selectedTile, Vector2.zero);
             }
             yield return null;
         }

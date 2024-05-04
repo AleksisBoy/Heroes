@@ -57,7 +57,7 @@ public class CombatTile : MonoBehaviour
     {
         unit.transform.position = transform.position;
         unit.gameObject.SetActive(true);
-        unit.OnUnitMoved();
+        unit.OnUnitUpdateUI();
     }
     public void SetUnit(CombatUnit unit)
     {
