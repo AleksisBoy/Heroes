@@ -48,17 +48,25 @@ public class CombatTile : MonoBehaviour
         sr.color = inactiveColor;
     }
 
-    public void ShowUnitPlaceHolder(CombatUnit unit)
+    public void ShowUnitPlaceHolder(CombatUnit unitPlacehold)
     {
-        unit.transform.position = transform.position;
-        unit.transform.rotation = unit.Attacker ? Quaternion.Euler(0f, 90f, 0f) : Quaternion.Euler(0f, -90f, 0f);
-        unit.gameObject.SetActive(true);
+        unitPlacehold.transform.position = transform.position; 
+        unitPlacehold.transform.rotation = unitPlacehold.Attacker ? Quaternion.Euler(0f, 90f, 0f) : Quaternion.Euler(0f, -90f, 0f);
+        unitPlacehold.gameObject.SetActive(true);
     }
     public void UpdateUnitTransform()
     {
+        if(!unit) return;
+
         unit.transform.position = transform.position;
+        UpdateUnitRotation();
         unit.gameObject.SetActive(true);
         unit.OnUnitUpdateUI();
+    }
+    public void UpdateUnitRotation()
+    {
+        if (!unit) return;
+
         unit.transform.rotation = unit.Attacker ? Quaternion.Euler(0f, 90f, 0f) : Quaternion.Euler(0f, -90f, 0f);
     }
     public void SetUnit(CombatUnit unit)

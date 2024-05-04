@@ -4,12 +4,12 @@ using UnityEngine;
 
 public class CombatUnit : MonoBehaviour
 {
-    [SerializeField] private MeshFilter meshFilter;
-    [SerializeField] private MeshRenderer meshRenderer;
-
+    private UnitVisual unitVisual = null;
+    public UnitVisual Visual => unitVisual;
     private int hp = 0;
     public int HP => hp;
-    public float ATB = 0f;
+    private float atb = 0f;
+    public float ATB => atb;
     private bool attacker = false;
     public bool Attacker => attacker;
     public bool retaliate = false;
@@ -21,14 +21,18 @@ public class CombatUnit : MonoBehaviour
     {
         this.unit = unit;
         this.attacker = attacker;
-        meshFilter.mesh = unit.Data.Mesh;
-        ATB = 0f;
+        unitVisual = Instantiate(unit.Data.VisualPrefab, transform);
+        atb = 0f;
         hp = unit.Data.HP;
     }
     public void UpdateATB(float time)
     {
         float initiativePerTurn = unit.Data.Initiative / 10f;
-        ATB += initiativePerTurn * time;
+        atb += initiativePerTurn * time;
+    }
+    public void ResetATB(float randomValue)
+    {
+        atb = randomValue; // should depend on luck or morale? multiply by luck or morale?
     }
     public int TakeDamage(int damage)
     {
@@ -40,6 +44,14 @@ public class CombatUnit : MonoBehaviour
             Debug.Log(name + " lost one unit");
         }
         OnUnitUpdateUI();
+        if(hp <= 0)
+        {
+            Visual.Animator.SetBool("Dead", true);
+        }
+        else
+        {
+            Visual.Animator.SetTrigger("TakeDamage");
+        }
         return Container.Count;
     }
     public void OnUnitUpdateUI()

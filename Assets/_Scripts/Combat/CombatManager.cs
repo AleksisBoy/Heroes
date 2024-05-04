@@ -65,7 +65,7 @@ public class CombatManager : MonoBehaviour
             combatUnits = map.GetAllUnits();
             foreach (CombatUnit unit in combatUnits)
             {
-                unit.ATB = Random.Range(0f, 0.25f);
+                unit.ResetATB(Random.Range(0f, 0.25f));
             }
 
             attackingPlayer.StartCombatMainState(map);
@@ -167,7 +167,7 @@ public class CombatManager : MonoBehaviour
             yield return MoveUnit(actingUnit, selectedTile);
         }
 
-        actingUnit.ATB = Random.Range(0f, 0.25f); // should depend on luck or morale?
+        actingUnit.ResetATB(Random.Range(0f, 0.25f));
         actingUnit = null;
         ProgressATB();
     }
@@ -176,6 +176,7 @@ public class CombatManager : MonoBehaviour
         CombatTile previousTile = map.GetUnitTile(unit.Container);
         previousTile.ClearTile();
 
+        unit.Visual.Animator.SetFloat("Speed01", 1f);
         Queue<CombatTile> path = new Queue<CombatTile>();
         path.Enqueue(tile);
         while(path.Count > 0)
@@ -198,6 +199,7 @@ public class CombatManager : MonoBehaviour
         }
         tile.SetUnit(unit);
         tile.UpdateUnitTransform();
+        unit.Visual.Animator.SetFloat("Speed01", 0f);
         yield return null;
     }
     private IEnumerator Attack(CombatUnit attackingUnit, CombatUnit defendingUnit, Vector2 pressDirection, List<CombatTile> activeTiles)
@@ -206,17 +208,24 @@ public class CombatManager : MonoBehaviour
 
         yield return MoveUnit(attackingUnit, adjacentTile);
 
+        attackingUnit.transform.forward = defendingUnit.transform.position - attackingUnit.transform.position;
+        defendingUnit.transform.forward = attackingUnit.transform.position - defendingUnit.transform.position;
+
         int attackingDamage = GetDamage(attackingUnit, defendingUnit);
         Debug.Log("attacking " + defendingUnit.name + " with damage " + attackingDamage);
 
+        attackingUnit.Visual.Animator.SetTrigger("Attack");
         int defendersLeft = defendingUnit.TakeDamage(attackingDamage);
-        if(defendersLeft <= 0)
+
+        yield return new WaitForSeconds(1.5f);
+        if (defendersLeft <= 0)
         {
+            // attack done with defender dying
+            map.GetUnitTile(attackingUnit.Container).UpdateUnitRotation();
             DestroyUnit(defendingUnit);
             CheckCombatState();
             yield break;
         }
-        yield return new WaitForSeconds(0.5f);
 
         if (defendingUnit.retaliate)
         {
@@ -224,16 +233,23 @@ public class CombatManager : MonoBehaviour
             int retaliatingDamage = GetDamage(defendingUnit, attackingUnit);
             Debug.Log("retaliating on " + attackingUnit.name + " with damage " + retaliatingDamage);
 
+            defendingUnit.Visual.Animator.SetTrigger("Attack");
             int attackersLeft = attackingUnit.TakeDamage(retaliatingDamage);
+
+            yield return new WaitForSeconds(1.5f);
             if (attackersLeft <= 0)
             {
-                DestroyUnit(defendingUnit);
+                // attack done with attacker dying
+                map.GetUnitTile(defendingUnit.Container).UpdateUnitRotation();
+                DestroyUnit(attackingUnit);
                 CheckCombatState();
+                yield break;
             }
         }
 
-        yield return new WaitForSeconds(0.5f);
-        // attack done
+        // attack done with noone dying
+        map.GetUnitTile(attackingUnit.Container).UpdateUnitRotation();
+        map.GetUnitTile(defendingUnit.Container).UpdateUnitRotation();
     }
     private int GetDamage(CombatUnit attackingUnit, CombatUnit defendingUnit)
     {

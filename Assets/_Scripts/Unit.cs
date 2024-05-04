@@ -6,7 +6,7 @@ using UnityEngine;
 public class Unit : ScriptableObject
 {
     [SerializeField] private Sprite unitSprite = null;
-    [SerializeField] private Mesh unitMesh = null;
+    [SerializeField] private UnitVisual unitVisualPrefab = null;
     [Header("Attributes")]
     [SerializeField] private int attack = 1;
     [SerializeField] private int defense = 1;
@@ -16,7 +16,7 @@ public class Unit : ScriptableObject
     [SerializeField] private Vector2Int damageRange;
 
     public Sprite Sprite { get { return unitSprite; } }
-    public Mesh Mesh { get { return unitMesh; } }
+    public UnitVisual VisualPrefab { get { return unitVisualPrefab; } }
 
     // Attributes
     public int Attack { get { return attack; } }

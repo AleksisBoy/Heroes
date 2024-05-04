@@ -13,6 +13,16 @@ public class CombatMainState : MonoBehaviour
     protected bool isActive = false;
     protected virtual void Update()
     {
+        // can check unit popup if not active main state
+        if (Input.GetMouseButtonDown(1))
+        {
+            canvasUnitUtility.SetUnitPopup();
+        }
+        else if (Input.GetMouseButtonUp(1))
+        {
+            canvasUnitUtility.DisableUnitPopup();
+        }
+
         if (!isActive) return;
 
         if (Input.GetMouseButtonDown(0))
@@ -22,14 +32,7 @@ public class CombatMainState : MonoBehaviour
             direction = selectTile.Item2;
             if(activeTiles.Contains(selectTile.Item1)) selectedTile = selectTile.Item1;
         }
-        else if (Input.GetMouseButtonDown(1))
-        {
-            canvasUnitUtility.SetUnitPopup();
-        }
-        else if (Input.GetMouseButtonUp(1))
-        {
-            canvasUnitUtility.DisableUnitPopup();
-        }
+
     }
     public virtual void StartCombat(CombatMap map, Player player)
     {

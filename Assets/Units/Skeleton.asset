@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: Skeleton
   m_EditorClassIdentifier: 
   unitSprite: {fileID: 21300000, guid: 7395bf0bc3cc40e4ab2dda5ec6832261, type: 3}
-  unitMesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
+  unitVisualPrefab: {fileID: 1498466889896964408, guid: 26c4affa3efe66d41b5f8a70131e3f3d, type: 3}
   attack: 1
   defense: 1
   healthPoints: 8
   speed: 4
   initiative: 10
-  damageRange: {x: 1, y: 1}
+  damageRange: {x: 1, y: 3}
