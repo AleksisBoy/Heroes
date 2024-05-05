@@ -5,7 +5,7 @@ using UnityEngine;
 public class CombatPreparation : MonoBehaviour
 {
     [SerializeField] private CanvasUnitUtility canvasUnitUtility = null;
-    [SerializeField] private UnitBar unitBar = null;
+    [SerializeField] private UnitBarCombatPreparation unitBar = null;
     [SerializeField] private float rotationSpeed = 20f;
 
     protected bool playerReady = false;

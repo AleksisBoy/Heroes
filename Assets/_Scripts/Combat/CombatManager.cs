@@ -16,7 +16,11 @@ public class CombatManager : MonoBehaviour
     private CombatUnit actingUnit = null;
     private List<CombatUnit> combatUnits = new List<CombatUnit>();
 
+    private Dictionary<Unit, int> defenderCasualties = new Dictionary<Unit, int>();
+    private Dictionary<Unit, int> attackerCasualties = new Dictionary<Unit, int>();
+
     private CombatState state = CombatState.Preparation;
+    private Player winner = null;
 
     private int playersReady = 0;
     private bool waitingForResponse = false;
@@ -75,8 +79,12 @@ public class CombatManager : MonoBehaviour
         }
         else if(state == CombatState.Ending)
         {
-            attackingPlayer.StartCombatEndingState();
-            defendingPlayer.StartCombatEndingState();
+            List<UnitContainer> casualtiesAttacker = ConvertToContainerList(attackerCasualties);
+            List<UnitContainer> casualtiesDefender = ConvertToContainerList(defenderCasualties);
+
+            attackingPlayer.StartCombatEndingState(winner, casualtiesAttacker, casualtiesDefender);
+            defendingPlayer.StartCombatEndingState(winner, casualtiesDefender, casualtiesAttacker);
+            Debug.Log("ending");
         }
         else
         {
@@ -215,7 +223,11 @@ public class CombatManager : MonoBehaviour
         Debug.Log("attacking " + defendingUnit.name + " with damage " + attackingDamage);
 
         attackingUnit.Visual.Animator.SetTrigger("Attack");
+        int defendersCount = defendingUnit.Container.Count;
         int defendersLeft = defendingUnit.TakeDamage(attackingDamage);
+
+        int defendersLost = defendersCount - defendersLeft;
+        SaveCasualtyForPlayer(defendingUnit.Container.Data, defendersLost, defendingUnit.Container.Player);
 
         yield return new WaitForSeconds(1.5f);
         if (defendersLeft <= 0)
@@ -234,7 +246,11 @@ public class CombatManager : MonoBehaviour
             Debug.Log("retaliating on " + attackingUnit.name + " with damage " + retaliatingDamage);
 
             defendingUnit.Visual.Animator.SetTrigger("Attack");
+            int attackersCount = attackingUnit.Container.Count;
             int attackersLeft = attackingUnit.TakeDamage(retaliatingDamage);
+
+            int attackersLost = attackersCount - attackersLeft;
+            SaveCasualtyForPlayer(attackingUnit.Container.Data, attackersLost, attackingUnit.Container.Player);
 
             yield return new WaitForSeconds(1.5f);
             if (attackersLeft <= 0)
@@ -278,8 +294,35 @@ public class CombatManager : MonoBehaviour
     }
     private void FinishCombatMainState(Player winner)
     {
+        this.winner = winner;
         Debug.Log("Combat won by " + winner.name);
         ProceedToNextState();
+    }
+    private void SaveCasualtyForPlayer(Unit unit, int count, Player player)
+    {
+        Dictionary<Unit, int> dic;
+        if (player == attackingPlayer) dic = attackerCasualties;
+        else if (player == defendingPlayer) dic = defenderCasualties;
+        else
+        {
+            Debug.LogError("NO SUCH PLAYER FOR REGISTERING CASUALTIES");
+            return;
+        }
+
+        if(!dic.TryAdd(unit, count))
+        {
+            dic[unit] += count;
+        }
+    }
+    private List<UnitContainer> ConvertToContainerList(Dictionary<Unit, int> casualties)
+    {
+        List<UnitContainer> units = new List<UnitContainer>();
+        foreach(Unit unit in casualties.Keys)
+        {
+            UnitContainer container = new UnitContainer(unit, casualties[unit], null);
+            units.Add(container);
+        }
+        return units;
     }
     //private Player GetUnitsPlayer(CombatUnit unit)
     //{

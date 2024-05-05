@@ -40,8 +40,13 @@ public class CombatUnit : MonoBehaviour
         while(hp <= 0)
         {
             Container.DecreaseCount();
-            hp += Container.Data.HP;
             Debug.Log(name + " lost one unit");
+            if(Container.Count <= 0)
+            {
+                Debug.Log("lost all stack");
+                break;
+            }
+            hp += Container.Data.HP;
         }
         OnUnitUpdateUI();
         if(hp <= 0)

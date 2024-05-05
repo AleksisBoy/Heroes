@@ -10,6 +10,7 @@ public class Player : MonoBehaviour
     [SerializeField] private List<HeroMount> heroes = new List<HeroMount>();
     [SerializeField] private CombatPreparation combatPreparation = null;
     [SerializeField] protected CombatMainState combatMainState = null;
+    [SerializeField] private CombatEnding combatEnding = null;
 
     private Dictionary<ResourceType, int> resources = new Dictionary<ResourceType, int>();
     public Action resourcesUpdated = null;
@@ -93,10 +94,10 @@ public class Player : MonoBehaviour
             yield return null;
         }
     }
-    public virtual void StartCombatEndingState()
+    public virtual void StartCombatEndingState(Player winner, List<UnitContainer> myCasualties, List<UnitContainer> opponentCasualties)
     {
         if (currentState != null) currentState.SetActive(false);
-        //combatMainState.StartCombat(combatMap, this);
+        combatEnding.StartEnding(winner == this ? true : false, myCasualties, opponentCasualties);
         currentState = combatMainState.gameObject;
     }
     public bool IsAllyHero(HeroMount hero)
