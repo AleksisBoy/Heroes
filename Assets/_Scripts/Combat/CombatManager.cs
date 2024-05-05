@@ -71,8 +71,8 @@ public class CombatManager : MonoBehaviour
                 unit.ResetATB(Random.Range(0f, 0.25f));
             }
 
-            attackingPlayer.StartCombatMainState(map);
-            defendingPlayer.StartCombatMainState(map);
+            attackingPlayer.StartCombatMainState(map, true);
+            defendingPlayer.StartCombatMainState(map, false);
 
             ProgressATB();
         }
@@ -139,7 +139,7 @@ public class CombatManager : MonoBehaviour
         CombatTile actingUnitTile = map.GetUnitTile(actingUnit.Container);
         List<CombatTile> activeTiles = map.GetTilesAroundTile(actingUnitTile, actingUnit.Container.Data.Speed);
 
-        List<CombatTile> enemyUnitTiles = map.GetEnemyUnitsTilesFor(playerActing, activeTiles);
+        List<CombatTile> enemyUnitTiles = map.GetEnemyUnitsTilesOnBorderForPlayer(playerActing, activeTiles);
         activeTiles.AddRange(enemyUnitTiles);
         activeTiles.Remove(actingUnitTile);
         playerActing.CombatTurnSetup(map, activeTiles, enemyUnitTiles, actingUnitTile);

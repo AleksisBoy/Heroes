@@ -10,7 +10,7 @@ public class HeroMount : MapObject
     [SerializeField] private Hero hero = null;
     [SerializeField] private float moveSpeed = 1f;
     [SerializeField] private GameObject selectionCircle = null;
-    public bool ai = false;
+    //public bool ai = false;
 
     private Player player;
     private UnitContainer[] units = new UnitContainer[7];
@@ -43,13 +43,19 @@ public class HeroMount : MapObject
     public void SpawnStarterUnit() // debug
     {
         UnitContainer unit = new UnitContainer(hero.starterUnit, hero.starterUnitCount, playerDebug);
-        units[0] = unit;
+        //units[0] = unit;
         UnitContainer unit1 = new UnitContainer(hero.starterUnit, hero.starterUnitCount + 5, playerDebug);
-        units[1] = unit1;
+        //units[1] = unit1;
         UnitContainer unit2 = new UnitContainer(hero.starterUnit, hero.starterUnitCount + 10, playerDebug);
-        units[2] = unit2;
+        //units[2] = unit2;
         UnitContainer unit3 = new UnitContainer(hero.starterUnit, hero.starterUnitCount + 15, playerDebug);
         units[3] = unit3;
+        UnitContainer unit4 = new UnitContainer(hero.starterUnit, hero.starterUnitCount + 20, playerDebug);
+        //units[4] = unit4;
+        UnitContainer unit5 = new UnitContainer(hero.starterUnit, hero.starterUnitCount + 25, playerDebug);
+        //units[5] = unit5;
+        UnitContainer unit6 = new UnitContainer(hero.starterUnit, hero.starterUnitCount + 30, playerDebug);
+        //units[6] = unit6;
     }
     private void HeroDailySetup()
     {
@@ -152,6 +158,15 @@ public class HeroMount : MapObject
             return units[i];
         }
         return null;
+    }
+    public int GetUnitCount()
+    {
+        int count = 0;
+        foreach(var unit in units)
+        {
+            if (unit != null) count++;
+        }
+        return count;
     }
 
     // Debug

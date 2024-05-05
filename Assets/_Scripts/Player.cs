@@ -63,7 +63,7 @@ public class Player : MonoBehaviour
         combatPreparation.StartPreparation(manager, hero, map, attacker);
         currentState = combatPreparation.gameObject;
     }
-    public virtual void StartCombatMainState(CombatMap combatMap)
+    public virtual void StartCombatMainState(CombatMap combatMap, bool attacker)
     {
         if (currentState != null) currentState.SetActive(false);
         combatMainState.StartCombat(combatMap, this);

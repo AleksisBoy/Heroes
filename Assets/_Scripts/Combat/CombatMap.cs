@@ -18,6 +18,7 @@ public class CombatMap : MonoBehaviour
     private Vector3 middlePos;
     public Vector3 MiddlePosition => middlePos;
     public float TileScale => tileScale;
+    public Vector2Int MapSize => mapSize;
 
     private List<CombatUnit> attackerPrepareUnits = new List<CombatUnit>();
     private List<CombatUnit> defenderPrepareUnits = new List<CombatUnit>();
@@ -59,7 +60,7 @@ public class CombatMap : MonoBehaviour
                 tile.transform.position = new Vector3(middlePos.x - (mapSize.x / 2) * tileScale + x, 0.01f,
                     middlePos.z - (mapSize.y / 2) * tileScale + y);
                 tile.transform.localScale *= tileScale;
-                tile.name = x / tileScale + ":" + y + tileScale;
+                tile.name = x / tileScale + ":" + y / tileScale;
                 tile.Set(Mathf.RoundToInt(x / tileScale), Mathf.RoundToInt(y / tileScale), CombatTile.State.None);
                 tile.transform.SetParent(transform);
                 tiles.Add(tile);
@@ -255,7 +256,7 @@ public class CombatMap : MonoBehaviour
         //tilesActive.Remove(tileBegin);
         return tilesActive;
     }
-    public List<CombatTile> GetEnemyUnitsTilesFor(Player player, List<CombatTile> activeTiles)
+    public List<CombatTile> GetEnemyUnitsTilesOnBorderForPlayer(Player player, List<CombatTile> activeTiles)
     {
         List<CombatTile> enemyTiles = new List<CombatTile>();
         List<CombatTile> checkedTiles = new List<CombatTile>();
@@ -283,6 +284,15 @@ public class CombatMap : MonoBehaviour
             }
         }
         return enemyTiles;
+    }
+    public List<CombatTile> GetEnemyUnitTiles(Player ally)
+    {
+        List<CombatTile> enemyUnitTiles = new List<CombatTile>();
+        foreach(CombatTile tile in tiles)
+        {
+            if (tile.Unit && tile.Unit.Container.Player != ally) enemyUnitTiles.Add(tile);
+        }
+        return enemyUnitTiles;
     }
     public CombatTile GetAdjacentTileInDirectionWithin(CombatTile centerTile, List<CombatTile> tileRange, Vector2 direction, CombatTile thisUnitTile)
     {
@@ -402,6 +412,64 @@ public class CombatMap : MonoBehaviour
         }
         return path;
     }
+    public CombatTile GetClosestTileToTile(CombatTile startingTile, CombatTile endingTile, List<CombatTile> tileRange)
+    {
+        if (startingTile == endingTile) return endingTile;
+        if (tileRange.Contains(endingTile)) return endingTile;
+
+        List<CombatTile> openTiles = new List<CombatTile>();
+        List<CombatTile> closedTiles = new List<CombatTile>();
+        openTiles.Add(startingTile);
+
+        while (openTiles.Count > 0)
+        {
+            CombatTile current = openTiles.OrderBy(x => x.fCost).FirstOrDefault();
+            if (!current) continue; //incorrect
+            openTiles.Remove(current);
+            closedTiles.Add(current);
+
+            if (current == endingTile) break;
+
+            for (int i = 0; i < DirectionsPathfind.Count; i++)
+            {
+                CombatTile neighbour = GetByCoors(current.Coordinates + DirectionsPathfind[i]);
+                if (neighbour != endingTile) if (!neighbour || !neighbour.IsFree() || closedTiles.Contains(neighbour)) continue;
+
+                float gCost = Vector2.Distance(neighbour.Coordinates, current.Coordinates) + current.gCost;
+                float hCost = Vector2.Distance(neighbour.Coordinates, endingTile.Coordinates);
+                if (!openTiles.Contains(neighbour) || gCost < neighbour.gCost)
+                {
+                    neighbour.gCost = gCost;
+                    neighbour.hCost = hCost;
+                    neighbour.fCost = gCost + hCost;
+                    neighbour.parentTile = current;
+                    Debug.Log(neighbour.Coordinates);
+                    neighbour.UpdateState(CombatTile.State.Highlight);
+                    if (!openTiles.Contains(neighbour)) openTiles.Add(neighbour);
+                }
+            }
+        }
+        CombatTile closestTile = null;
+        Stack<CombatTile> path = new Stack<CombatTile>();
+        path.Push(endingTile);
+        while (true)
+        {
+            CombatTile pathTile = path.Peek().parentTile;
+            if (tileRange.Contains(pathTile))
+            {
+                closestTile = pathTile;
+                break;
+            }
+            if (pathTile == startingTile) break;
+            path.Push(pathTile);
+        }
+        
+        foreach (CombatTile tile in tiles)
+        {
+            tile.ResetPF();
+        }
+        return closestTile;
+    }
     public List<CombatTile> GetTilesByColomns(int[] colomns)
     {
         List<CombatTile> tilesActive = new List<CombatTile>();
@@ -413,6 +481,10 @@ public class CombatMap : MonoBehaviour
             }
         }
         return tilesActive;
+    }
+    public CombatTile GetTileInColomn(int colomn, int index)
+    {
+        return GetTilesByColomns(new int[] { colomn })[index];
     }
     public CombatTile GetRandomFreeTile(List<CombatTile> tileRange)
     {
@@ -449,6 +521,10 @@ public class CombatMap : MonoBehaviour
     public CombatTile GetByCoors(Vector2Int coordinates)
     {
         return tiles.FirstOrDefault(obj => obj.Coordinates == coordinates);
+    }
+    public List<CombatTile> GetTiles()
+    {
+        return new List<CombatTile>(tiles);
     }
     // Setters
     public void AddActionOnUnitRemove(Action<CombatUnit> action)

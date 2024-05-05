@@ -10,7 +10,8 @@ public class CombatMainState : MonoBehaviour
     protected CombatTile selectedTile = null;
     private Vector2 direction;
     protected List<CombatTile> activeTiles = null;
-    private CombatTile actingUnitTile = null;
+    protected CombatTile actingUnitTile = null;
+    public CombatTile ActingUnitTile => actingUnitTile;
     protected bool isActive = false;
     protected virtual void Update()
     {
