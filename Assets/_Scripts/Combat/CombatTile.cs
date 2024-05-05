@@ -16,6 +16,12 @@ public class CombatTile : MonoBehaviour
     [SerializeField] private Color activeColor = Color.white;
     [SerializeField] private Color previewColor = Color.white;
 
+    // Pathfinding
+    public float hCost = 0f;
+    public float gCost = 0f;
+    public float fCost = 0f;
+    public CombatTile parentTile = null;
+
     public float tempOrder = 0;
     private Vector2Int coordinates;
     public Vector2Int Coordinates => coordinates;
@@ -80,6 +86,13 @@ public class CombatTile : MonoBehaviour
     public bool IsFree()
     {
         return unit == null;
+    }
+    public void ResetPF()
+    {
+        gCost = 0f;
+        hCost = 0f;
+        fCost = 0f;
+        parentTile = null;
     }
     private void OnDestroy()
     {

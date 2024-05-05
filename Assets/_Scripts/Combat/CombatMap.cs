@@ -348,9 +348,51 @@ public class CombatMap : MonoBehaviour
         
         return adjacentTile;
     }
-    public Queue<CombatTile> GetPathToTile(CombatTile startingTile, CombatTile endingTile, List<CombatTile> tileRange)
+    public Stack<CombatTile> GetPathToTile(CombatTile startingTile, CombatTile endingTile, List<CombatTile> tileRange)
     {
-        return null;
+        List<CombatTile> openTiles = new List<CombatTile>();
+        List<CombatTile> closedTiles = new List<CombatTile>();
+        openTiles.Add(startingTile);
+
+        while (openTiles.Count > 0)
+        {
+            CombatTile current = openTiles.OrderBy(x => x.fCost).FirstOrDefault();
+            if (!current) continue;
+            openTiles.Remove(current);
+            closedTiles.Add(current);
+
+            if (current == endingTile) break;
+
+            for (int i = 0; i < DirectionsPathfind.Count; i++)
+            {
+                CombatTile neighbour = GetByCoors(current.Coordinates + DirectionsPathfind[i]);
+                if (!neighbour || !neighbour.IsFree() || closedTiles.Contains(neighbour)) continue;
+
+                float gCost = Vector2.Distance(neighbour.Coordinates, current.Coordinates) + current.gCost;
+                float hCost = Vector2.Distance(neighbour.Coordinates, endingTile.Coordinates);
+                if (!openTiles.Contains(neighbour) || gCost < neighbour.gCost)
+                {
+                    neighbour.gCost = gCost;
+                    neighbour.hCost = hCost;
+                    neighbour.fCost = gCost + hCost;
+                    neighbour.parentTile = current;
+                    if (!openTiles.Contains(neighbour)) openTiles.Add(neighbour);
+                }
+            }
+        }
+        Stack<CombatTile> path = new Stack<CombatTile>();
+        path.Push(endingTile);
+        while (true)
+        {
+            CombatTile pathTile = path.Peek().parentTile;
+            if(pathTile == startingTile) break;
+            path.Push(pathTile);
+        }
+        foreach(CombatTile tile in tiles)
+        {
+            tile.ResetPF();
+        }
+        return path;
     }
     public List<CombatTile> GetTilesByColomns(int[] colomns)
     {

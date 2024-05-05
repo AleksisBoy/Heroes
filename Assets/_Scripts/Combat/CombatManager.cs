@@ -11,7 +11,6 @@ public class CombatManager : MonoBehaviour
     [SerializeField] private Player defendingPlayer;
     [SerializeField] private HeroMount attackingHero = null;
     [SerializeField] private HeroMount defendingHero = null;
-    [SerializeField] private float unitSpeed = 5f;
 
     private CombatUnit actingUnit = null;
     private List<CombatUnit> combatUnits = new List<CombatUnit>();
@@ -172,24 +171,23 @@ public class CombatManager : MonoBehaviour
         }
         else
         {
-            yield return MoveUnit(actingUnit, selectedTile);
+            yield return MoveUnit(actingUnit, selectedTile, activeTiles);
         }
 
         actingUnit.ResetATB(Random.Range(0f, 0.25f));
         actingUnit = null;
         ProgressATB();
     }
-    private IEnumerator MoveUnit(CombatUnit unit, CombatTile tile)
+    private IEnumerator MoveUnit(CombatUnit unit, CombatTile tile, List<CombatTile> tileRange)
     {
         CombatTile previousTile = map.GetUnitTile(unit.Container);
         previousTile.ClearTile();
 
         unit.Visual.Animator.SetFloat("Speed01", 1f);
-        Queue<CombatTile> path = new Queue<CombatTile>();
-        path.Enqueue(tile);
+        Stack<CombatTile> path = map.GetPathToTile(previousTile, tile, tileRange);
         while(path.Count > 0)
         {
-            CombatTile nextTile = path.Dequeue();
+            CombatTile nextTile = path.Pop();
 
             Vector3 startPos = unit.transform.position;
             Vector3 direction = nextTile.transform.position - unit.transform.position;
@@ -200,7 +198,7 @@ public class CombatManager : MonoBehaviour
             {
                 unit.transform.position = Vector3.Lerp(startPos, nextTile.transform.position, power);
                 unit.OnUnitUpdateUI();
-                power += Time.deltaTime * unitSpeed;
+                power += Time.deltaTime * unit.Visual.MoveSpeed;
                 yield return null;
             }
             unit.transform.position = nextTile.transform.position;
@@ -212,13 +210,44 @@ public class CombatManager : MonoBehaviour
     }
     private IEnumerator Attack(CombatUnit attackingUnit, CombatUnit defendingUnit, Vector2 pressDirection, List<CombatTile> activeTiles)
     {
-        CombatTile adjacentTile = map.GetAdjacentTileInDirectionWithin(map.GetUnitTile(defendingUnit.Container),activeTiles, pressDirection);
+        CombatTile adjacentTile = map.GetAdjacentTileInDirectionWithin(map.GetUnitTile(defendingUnit.Container), activeTiles, pressDirection);
 
-        yield return MoveUnit(attackingUnit, adjacentTile);
+        yield return MoveUnit(attackingUnit, adjacentTile, activeTiles);
 
         attackingUnit.transform.forward = defendingUnit.transform.position - attackingUnit.transform.position;
         defendingUnit.transform.forward = attackingUnit.transform.position - defendingUnit.transform.position;
 
+        int defendersLeft = UnitAttack(attackingUnit, defendingUnit);
+
+        yield return new WaitForSeconds(1.5f);
+        if (defendersLeft <= 0)
+        {
+            // attack done with defender dying
+            KillUnit(attackingUnit, defendingUnit);
+            yield break;
+        }
+
+        if (defendingUnit.retaliate)
+        {
+            defendingUnit.retaliate = false;
+
+            int attackersLeft = UnitAttack(defendingUnit, attackingUnit);
+
+            yield return new WaitForSeconds(1.5f);
+            if (attackersLeft <= 0)
+            {
+                // attack done with attacker dying
+                KillUnit(defendingUnit, attackingUnit);
+                yield break;
+            }
+        }
+
+        // attack done with noone dying
+        map.GetUnitTile(attackingUnit.Container).UpdateUnitRotation();
+        map.GetUnitTile(defendingUnit.Container).UpdateUnitRotation();
+    }
+    private int UnitAttack(CombatUnit attackingUnit, CombatUnit defendingUnit)
+    {
         int attackingDamage = GetDamage(attackingUnit, defendingUnit);
         Debug.Log("attacking " + defendingUnit.name + " with damage " + attackingDamage);
 
@@ -227,45 +256,15 @@ public class CombatManager : MonoBehaviour
         int defendersLeft = defendingUnit.TakeDamage(attackingDamage);
 
         int defendersLost = defendersCount - defendersLeft;
-        SaveCasualtyForPlayer(defendingUnit.Container.Data, defendersLost, defendingUnit.Container.Player);
+        if (defendersLost > 0) SaveCasualtyForPlayer(defendingUnit.Container.Data, defendersLost, defendingUnit.Container.Player);
 
-        yield return new WaitForSeconds(1.5f);
-        if (defendersLeft <= 0)
-        {
-            // attack done with defender dying
-            map.GetUnitTile(attackingUnit.Container).UpdateUnitRotation();
-            DestroyUnit(defendingUnit);
-            CheckCombatState();
-            yield break;
-        }
-
-        if (defendingUnit.retaliate)
-        {
-            defendingUnit.retaliate = false;
-            int retaliatingDamage = GetDamage(defendingUnit, attackingUnit);
-            Debug.Log("retaliating on " + attackingUnit.name + " with damage " + retaliatingDamage);
-
-            defendingUnit.Visual.Animator.SetTrigger("Attack");
-            int attackersCount = attackingUnit.Container.Count;
-            int attackersLeft = attackingUnit.TakeDamage(retaliatingDamage);
-
-            int attackersLost = attackersCount - attackersLeft;
-            SaveCasualtyForPlayer(attackingUnit.Container.Data, attackersLost, attackingUnit.Container.Player);
-
-            yield return new WaitForSeconds(1.5f);
-            if (attackersLeft <= 0)
-            {
-                // attack done with attacker dying
-                map.GetUnitTile(defendingUnit.Container).UpdateUnitRotation();
-                DestroyUnit(attackingUnit);
-                CheckCombatState();
-                yield break;
-            }
-        }
-
-        // attack done with noone dying
+        return defendersLost;
+    }
+    private void KillUnit(CombatUnit attackingUnit, CombatUnit defendingUnit)
+    {
         map.GetUnitTile(attackingUnit.Container).UpdateUnitRotation();
-        map.GetUnitTile(defendingUnit.Container).UpdateUnitRotation();
+        DestroyUnit(defendingUnit);
+        CheckCombatState();
     }
     private int GetDamage(CombatUnit attackingUnit, CombatUnit defendingUnit)
     {
