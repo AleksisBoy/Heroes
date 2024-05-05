@@ -139,9 +139,10 @@ public class CombatManager : MonoBehaviour
         CombatTile actingUnitTile = map.GetUnitTile(actingUnit.Container);
         List<CombatTile> activeTiles = map.GetTilesAroundTile(actingUnitTile, actingUnit.Container.Data.Speed);
 
-        activeTiles.AddRange(map.GetEnemyUnitsTilesFor(playerActing, activeTiles));
+        List<CombatTile> enemyUnitTiles = map.GetEnemyUnitsTilesFor(playerActing, activeTiles);
+        activeTiles.AddRange(enemyUnitTiles);
         activeTiles.Remove(actingUnitTile);
-        playerActing.CombatTurnSetup(map, activeTiles);
+        playerActing.CombatTurnSetup(map, activeTiles, enemyUnitTiles, actingUnitTile);
 
         StartCoroutine(WaitForResponse(playerActing, activeTiles));
     }
@@ -210,7 +211,7 @@ public class CombatManager : MonoBehaviour
     }
     private IEnumerator Attack(CombatUnit attackingUnit, CombatUnit defendingUnit, Vector2 pressDirection, List<CombatTile> activeTiles)
     {
-        CombatTile adjacentTile = map.GetAdjacentTileInDirectionWithin(map.GetUnitTile(defendingUnit.Container), activeTiles, pressDirection);
+        CombatTile adjacentTile = map.GetAdjacentTileInDirectionWithin(map.GetUnitTile(defendingUnit.Container), activeTiles, pressDirection, map.GetUnitTile(attackingUnit.Container));
 
         yield return MoveUnit(attackingUnit, adjacentTile, activeTiles);
 
@@ -219,7 +220,7 @@ public class CombatManager : MonoBehaviour
 
         int defendersLeft = UnitAttack(attackingUnit, defendingUnit);
 
-        yield return new WaitForSeconds(1.5f);
+        yield return new WaitForSeconds(2f);
         if (defendersLeft <= 0)
         {
             // attack done with defender dying
@@ -233,7 +234,7 @@ public class CombatManager : MonoBehaviour
 
             int attackersLeft = UnitAttack(defendingUnit, attackingUnit);
 
-            yield return new WaitForSeconds(1.5f);
+            yield return new WaitForSeconds(2f);
             if (attackersLeft <= 0)
             {
                 // attack done with attacker dying
@@ -258,7 +259,7 @@ public class CombatManager : MonoBehaviour
         int defendersLost = defendersCount - defendersLeft;
         if (defendersLost > 0) SaveCasualtyForPlayer(defendingUnit.Container.Data, defendersLost, defendingUnit.Container.Player);
 
-        return defendersLost;
+        return defendersLeft;
     }
     private void KillUnit(CombatUnit attackingUnit, CombatUnit defendingUnit)
     {

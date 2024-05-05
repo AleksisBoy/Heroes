@@ -15,43 +15,52 @@ public class CombatTile : MonoBehaviour
     [SerializeField] private Color intersectingColor = Color.white;
     [SerializeField] private Color activeColor = Color.white;
     [SerializeField] private Color previewColor = Color.white;
+    [SerializeField] private Color enemyColor = Color.white;
+    [SerializeField] private Color unitTurnColor = Color.white;
 
     // Pathfinding
-    public float hCost = 0f;
-    public float gCost = 0f;
-    public float fCost = 0f;
-    public CombatTile parentTile = null;
+    [HideInInspector] public float hCost = 0f;
+    [HideInInspector] public float gCost = 0f;
+    [HideInInspector] public float fCost = 0f;
+    [HideInInspector] public CombatTile parentTile = null;
 
-    public float tempOrder = 0;
+    private State state;
+    public State S => state;
     private Vector2Int coordinates;
     public Vector2Int Coordinates => coordinates;
     //private bool occupied = false;
     private CombatUnit unit = null;
     public CombatUnit Unit => unit;
-
-
-    public static List<CombatTile> Array = new List<CombatTile>();
-    private void Awake()
+    public void Set(int x, int y, State state)
     {
-        Array.Add(this);
-    }
-    public void Set(int x, int y)
-    {
-        sr.color = inactiveColor;
+        UpdateState(state);
         coordinates = new Vector2Int(x, y);
         unit = null;
     }
-    public void Selected()
+    public void UpdateState(State state)
     {
-        sr.color = selectedColor;
-    }
-    public void Actived()
-    {
-        sr.color = activeColor;
-    }
-    public void Inactived()
-    {
-        sr.color = inactiveColor;
+        this.state = state;
+        switch(state)
+        {
+            case State.None:
+                sr.color = inactiveColor;
+                break;
+            case State.Active: 
+                sr.color = activeColor;
+                break;
+            case State.Highlight:
+                sr.color = unitTurnColor;
+                break;
+            case State.Endangered:
+                sr.color = enemyColor;
+                break;
+            case State.Selected:
+                sr.color = selectedColor;
+                break;
+            default:
+                sr.color = inactiveColor;
+                break;
+        }
     }
 
     public void ShowUnitPlaceHolder(CombatUnit unitPlacehold)
@@ -94,8 +103,12 @@ public class CombatTile : MonoBehaviour
         fCost = 0f;
         parentTile = null;
     }
-    private void OnDestroy()
+    public enum State
     {
-        if(Array.Contains(this)) Array.Remove(this);
+        None, 
+        Active,
+        Selected,
+        Endangered, 
+        Highlight
     }
 }

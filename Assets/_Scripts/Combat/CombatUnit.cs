@@ -51,7 +51,7 @@ public class CombatUnit : MonoBehaviour
         OnUnitUpdateUI();
         if(hp <= 0)
         {
-            Visual.Animator.SetBool("Dead", true);
+            Visual.Animator.SetTrigger("Dead");
         }
         else
         {

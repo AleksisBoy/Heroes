@@ -10,9 +10,9 @@ public class ArtificialPlayer : Player
         combatMainState.StartCombat(combatMap, this);
         currentState = combatMainState.gameObject;
     }
-    public override void CombatTurnSetup(CombatMap combatMap, List<CombatTile> activeTiles)
+    public override void CombatTurnSetup(CombatMap combatMap, List<CombatTile> activeTiles, List<CombatTile> enemyTiles, CombatTile actingUnitTile)
     {
-        combatMainState.SetActive(activeTiles, true);
+        combatMainState.SetActive(activeTiles, true, actingUnitTile);
     }
     public override IEnumerator<CombatPlayerTurnInput> CombatTurnInput()
     {
@@ -23,7 +23,7 @@ public class ArtificialPlayer : Player
             if (selectedTile != null)
             {
                 madeTurn = true;
-                combatMainState.SetActive(null, false);
+                combatMainState.SetActive(null, false, null);
                 combatMainState.DeactivateTiles();
                 yield return new CombatPlayerTurnInput(selectedTile, Vector2.zero);
             }

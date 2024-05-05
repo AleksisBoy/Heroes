@@ -60,7 +60,7 @@ public class CombatMap : MonoBehaviour
                     middlePos.z - (mapSize.y / 2) * tileScale + y);
                 tile.transform.localScale *= tileScale;
                 tile.name = x / tileScale + ":" + y + tileScale;
-                tile.Set(Mathf.RoundToInt(x / tileScale), Mathf.RoundToInt(y / tileScale));
+                tile.Set(Mathf.RoundToInt(x / tileScale), Mathf.RoundToInt(y / tileScale), CombatTile.State.None);
                 tile.transform.SetParent(transform);
                 tiles.Add(tile);
             }
@@ -70,7 +70,7 @@ public class CombatMap : MonoBehaviour
     {
         foreach(CombatTile tile in tiles)
         {
-            tile.Inactived();
+            tile.UpdateState(CombatTile.State.None);
         }
     }
 
@@ -105,7 +105,7 @@ public class CombatMap : MonoBehaviour
         if (onRemoveUnit != null) onRemoveUnit(tile.Unit);
         Destroy(tile.Unit.gameObject);
         tile.ClearTile();
-        tile.Actived();
+        tile.UpdateState(CombatTile.State.Active);
     }
     public bool IsUnitOnMapPrepare(CombatUnit unit, bool attacker)
     {
@@ -167,7 +167,7 @@ public class CombatMap : MonoBehaviour
         if (onRemoveUnit != null) onRemoveUnit(tile.Unit);
         Destroy(tile.Unit.gameObject);
         tile.ClearTile();
-        tile.Actived();
+        tile.UpdateState(CombatTile.State.Active);
     }
 
     // Getters
@@ -220,7 +220,7 @@ public class CombatMap : MonoBehaviour
 
         Queue<CombatTile> qTiles = new Queue<CombatTile>();
 
-        tileBegin.tempOrder = 0;
+        tileBegin.hCost = 0;
         qTiles.Enqueue(tileBegin);
         List<CombatTile> tilesActive = new List<CombatTile>();
         while (qTiles.Count > 0)
@@ -229,7 +229,7 @@ public class CombatMap : MonoBehaviour
             for (int i = 0; i < DirectionsPathfind.Count; i++)
             {
                 CombatTile adjTile = GetByCoors(tile.Coordinates + DirectionsPathfind[i]);
-                float nextOrder = tile.tempOrder;
+                float nextOrder = tile.hCost;
                 if (i > 3)
                 {
                     nextOrder += 1.4f;
@@ -240,7 +240,7 @@ public class CombatMap : MonoBehaviour
                 }
                 if (!adjTile || !adjTile.IsFree() || tilesChecked.Contains(adjTile) || nextOrder > radius) continue;
 
-                adjTile.tempOrder = nextOrder;
+                adjTile.hCost = nextOrder;
                 qTiles.Enqueue(adjTile);
                 tilesChecked.Add(adjTile);
             }
@@ -250,7 +250,7 @@ public class CombatMap : MonoBehaviour
 
         foreach (CombatTile tile in tilesActive)
         {
-            tile.tempOrder = 0;
+            tile.hCost = 0;
         }
         //tilesActive.Remove(tileBegin);
         return tilesActive;
@@ -284,8 +284,9 @@ public class CombatMap : MonoBehaviour
         }
         return enemyTiles;
     }
-    public CombatTile GetAdjacentTileInDirectionWithin(CombatTile centerTile, List<CombatTile> tileRange, Vector2 direction)
+    public CombatTile GetAdjacentTileInDirectionWithin(CombatTile centerTile, List<CombatTile> tileRange, Vector2 direction, CombatTile thisUnitTile)
     {
+        if (thisUnitTile) tileRange.Add(thisUnitTile);
         float angle = (Mathf.Atan2(direction.y, direction.x) + Mathf.PI) / (2 * Mathf.PI); // value of 0 to 1
         CombatTile adjacentTile = null;
         float currentValue = 0.0625f;
@@ -306,6 +307,11 @@ public class CombatMap : MonoBehaviour
                 Debug.Log(i);
                 CombatTile tile = GetByCoors(centerTile.Coordinates.x + DirectionsAdjacent[i].x, centerTile.Coordinates.y + DirectionsAdjacent[i].y);
                 if (tile && tileRange.Contains(tile) && !tile.Unit)
+                {
+                    adjacentTile = tile;
+                    break;
+                }
+                else if (tile && tileRange.Contains(tile) && tile.Unit && thisUnitTile && tile.Unit == thisUnitTile.Unit)
                 {
                     adjacentTile = tile;
                     break;
@@ -350,6 +356,8 @@ public class CombatMap : MonoBehaviour
     }
     public Stack<CombatTile> GetPathToTile(CombatTile startingTile, CombatTile endingTile, List<CombatTile> tileRange)
     {
+        if(startingTile == endingTile) return new Stack<CombatTile>();
+
         List<CombatTile> openTiles = new List<CombatTile>();
         List<CombatTile> closedTiles = new List<CombatTile>();
         openTiles.Add(startingTile);
@@ -452,7 +460,7 @@ public class CombatMap : MonoBehaviour
         List<CombatTile> tilesActive = GetTilesByColomns(colomns);
         foreach (CombatTile tile in tilesActive)
         {
-            tile.Actived();
+            tile.UpdateState(CombatTile.State.Active);
         }
         return tilesActive;
     }

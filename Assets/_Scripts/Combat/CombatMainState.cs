@@ -10,10 +10,24 @@ public class CombatMainState : MonoBehaviour
     protected CombatTile selectedTile = null;
     private Vector2 direction;
     protected List<CombatTile> activeTiles = null;
+    private CombatTile actingUnitTile = null;
     protected bool isActive = false;
     protected virtual void Update()
     {
-        // can check unit popup if not active main state
+        if (isActive)
+        {
+            canvasUnitUtility.HighlightSelection(activeTiles, actingUnitTile);
+
+            if (Input.GetMouseButtonDown(0))
+            {
+                var selectTile = canvasUnitUtility.SelectTileOnPointer();
+
+                direction = selectTile.Item2;
+                if (activeTiles.Contains(selectTile.Item1)) selectedTile = selectTile.Item1;
+            }
+        }
+
+        // can check unit popup either if isActive or no
         if (Input.GetMouseButtonDown(1))
         {
             canvasUnitUtility.SetUnitPopup();
@@ -22,17 +36,6 @@ public class CombatMainState : MonoBehaviour
         {
             canvasUnitUtility.DisableUnitPopup();
         }
-
-        if (!isActive) return;
-
-        if (Input.GetMouseButtonDown(0))
-        {
-            var selectTile = canvasUnitUtility.SelectTileOnPointer();
-
-            direction = selectTile.Item2;
-            if(activeTiles.Contains(selectTile.Item1)) selectedTile = selectTile.Item1;
-        }
-
     }
     public virtual void StartCombat(CombatMap map, Player player)
     {
@@ -46,11 +49,16 @@ public class CombatMainState : MonoBehaviour
             canvasUnitUtility.UpdateUnitCount(unit, map);
         }
     }
-    public void SetActive(List<CombatTile> activeTiles, bool state)
+    public void SetActive(List<CombatTile> activeTiles, bool state, CombatTile actingUnitTile)
     {
         this.activeTiles = activeTiles;
+        this.actingUnitTile = actingUnitTile;
         isActive = state;
-        if (!state) selectedTile = null;
+        if (!state)
+        {
+            selectedTile = null;
+            canvasUnitUtility?.ResetSelection();
+        }
     }
     public void DeactivateTiles()
     {

@@ -40,7 +40,7 @@ public class UnitBarCombatPreparation : UnitBarDynamic
     }
     protected override void UnitIconDrag()
     {
-        currentTile?.Actived();
+        currentTile?.UpdateState(CombatTile.State.Active);
         if (RectTransformUtility.RectangleContainsScreenPoint((RectTransform)transform, Input.mousePosition))
         {
             // if mouse over unit bar
@@ -58,7 +58,7 @@ public class UnitBarCombatPreparation : UnitBarDynamic
             if (tilesUsed.Contains(selectedTile))
             {
                 currentTile = selectedTile;
-                currentTile.Selected();
+                currentTile.UpdateState(CombatTile.State.Selected);
 
                 currentTile.ShowUnitPlaceHolder(currentUnit);
                 canvasUnitUtility.UpdateUnitCount(currentUnit, map);
@@ -87,7 +87,7 @@ public class UnitBarCombatPreparation : UnitBarDynamic
         if (attacker) map.AddAttackerUnitOnMapPrepare(currentUnit, currentTile);
         else map.AddDefenderUnitOnMapPrepare(currentUnit, currentTile);
 
-        currentTile.Inactived();
+        currentTile.UpdateState(CombatTile.State.None);
 
         currentUnit = null;
         currentTile = null;

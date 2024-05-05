@@ -17,6 +17,10 @@ public class CanvasUnitUtility : MonoBehaviour
 
     private CombatMap map;
     private List<UnitCountUI> unitCounts = new List<UnitCountUI>();
+
+    private CombatTile currentTile = null;
+    private CombatTile.State lastStateTile = CombatTile.State.None;
+    public CombatTile Selection => currentTile;
     private void Awake()
     {
         foreach(Transform child in unitCountParent)
@@ -26,6 +30,36 @@ public class CanvasUnitUtility : MonoBehaviour
         popupUnit.gameObject.SetActive(false);
     }
 
+    private void Update()
+    {
+        
+    }
+    public void HighlightSelection(List<CombatTile> activeTiles, CombatTile actingUnitTile)
+    {
+        var selection = SelectTileOnPointer();
+        CombatTile selectedTile = selection.Item1;
+        Vector2 direction = selection.Item2;
+        if(selectedTile != currentTile)
+        {
+            currentTile?.UpdateState(lastStateTile);
+            if (activeTiles.Contains(selectedTile))
+            {
+                if(selectedTile.Unit) selectedTile = map.GetAdjacentTileInDirectionWithin(map.GetUnitTile(selectedTile.Unit.Container), activeTiles, direction, actingUnitTile);
+                lastStateTile = selectedTile.S;
+                selectedTile.UpdateState(CombatTile.State.Selected);
+                currentTile = selectedTile;
+            }
+            else
+            {
+                currentTile = null;
+            }
+        }
+    }
+    public void ResetSelection()
+    {
+        currentTile = null;
+        lastStateTile = CombatTile.State.None;
+    }
     public void SetUnitPopup() // on mouse down
     {
         CombatTile selectedTile = SelectTileOnPointer().Item1;
@@ -46,6 +80,8 @@ public class CanvasUnitUtility : MonoBehaviour
         if (hitInfo.transform == null) return (null, Vector2.zero);
 
         CombatTile tile = map.GetTileInPosition(hitInfo.point);
+        if(!tile) return (null, Vector2.zero);
+
         Vector3 direction = hitInfo.point - tile.transform.position;
         direction.Normalize();
         return (tile, new Vector2(direction.x, direction.z));

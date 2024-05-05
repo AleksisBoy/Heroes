@@ -69,14 +69,19 @@ public class Player : MonoBehaviour
         combatMainState.StartCombat(combatMap, this);
         currentState = combatMainState.gameObject;
     }
-    public virtual void CombatTurnSetup(CombatMap combatMap, List<CombatTile> activeTiles)
+    public virtual void CombatTurnSetup(CombatMap combatMap, List<CombatTile> activeTiles, List<CombatTile> enemyTiles, CombatTile actingUnitTile)
     {
         combatMap.DeactivateTiles();
-        combatMainState.SetActive(activeTiles, true);
+        combatMainState.SetActive(activeTiles, true, actingUnitTile);
         foreach(CombatTile tile in activeTiles)
         {
-            tile.Actived();
+            tile.UpdateState(CombatTile.State.Active);
         }
+        foreach (CombatTile tile in enemyTiles)
+        {
+            tile.UpdateState(CombatTile.State.None);
+        }
+        actingUnitTile.UpdateState(CombatTile.State.Selected);
     }
     public virtual IEnumerator<CombatPlayerTurnInput> CombatTurnInput()
     {
@@ -87,7 +92,7 @@ public class Player : MonoBehaviour
             if (selectedTile != null)
             {
                 madeTurn = true;
-                combatMainState.SetActive(null, false);
+                combatMainState.SetActive(null, false, null);
                 combatMainState.DeactivateTiles();
                 yield return new CombatPlayerTurnInput(selectedTile, combatMainState.GetSelectedTileDirection());
             }

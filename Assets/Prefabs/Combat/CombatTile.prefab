@@ -25,13 +25,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2021450097894555229}
+  serializedVersion: 2
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!114 &1015846706777324453
 MonoBehaviour:
@@ -51,6 +51,12 @@ MonoBehaviour:
   intersectingColor: {r: 0.9245283, g: 0.44045925, b: 0.44045925, a: 1}
   activeColor: {r: 0, g: 1, b: 0.015686275, a: 1}
   previewColor: {r: 0, g: 1, b: 0.015686275, a: 0.83137256}
+  enemyColor: {r: 1, g: 0.3066038, b: 0.3066038, a: 1}
+  unitTurnColor: {r: 0.5707547, g: 1, b: 0.92748785, a: 1}
+  hCost: 0
+  gCost: 0
+  fCost: 0
+  parentTile: {fileID: 0}
 --- !u!212 &4758039381288077446
 SpriteRenderer:
   m_ObjectHideFlags: 0
