@@ -165,7 +165,6 @@ public class CombatManager : MonoBehaviour
             pressDirection = input.direction;
             break;
         }
-
         if (selectedTile.Unit && selectedTile.Unit.IsOpponent(actingUnit))
         {
             yield return Attack(actingUnit, selectedTile.Unit, pressDirection, activeTiles);

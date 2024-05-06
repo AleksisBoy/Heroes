@@ -83,7 +83,7 @@ public class Player : MonoBehaviour
         }
         actingUnitTile.UpdateState(CombatTile.State.Selected);
     }
-    public virtual IEnumerator<CombatPlayerTurnInput> CombatTurnInput()
+    public virtual IEnumerator<CombatPlayerTurnInput> CombatTurnInput() 
     {
         bool madeTurn = false;
         while (!madeTurn)

@@ -47,16 +47,6 @@ public class AI_CombatMainState : CombatMainState
         gameObject.SetActive(true);
         StartCoroutine(Behave());
     }
-    private Node.Status MoveToTile()
-    {
-        // needs to know the unit its supposed to move
-        // all enemy(player's) units
-        // calculate all possible attacks and prioritize them by efficiency of the attack
-        // make a move with the most efficient attack or move
-        // move would be towards the closest unit or unit that is most dangerous in enemy pool
-        selectedTile = map.GetRandomFreeTile(activeTiles);
-        return Node.Status.SUCCESS;
-    }
     private Node.Status AssignClosestEnemyUnit()
     {
         closestEnemyUnitTile = null;
@@ -107,5 +97,14 @@ public class AI_CombatMainState : CombatMainState
             selectedTile = null;
         }
     }
-
+    private Node.Status MoveToTile()
+    {
+        // needs to know the unit its supposed to move
+        // all enemy(player's) units
+        // calculate all possible attacks and prioritize them by efficiency of the attack
+        // make a move with the most efficient attack or move
+        // move would be towards the closest unit or unit that is most dangerous in enemy pool
+        selectedTile = map.GetRandomFreeTile(activeTiles);
+        return Node.Status.SUCCESS;
+    }
 }

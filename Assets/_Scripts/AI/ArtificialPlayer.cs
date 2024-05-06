@@ -34,10 +34,15 @@ public class ArtificialPlayer : Player
             CombatTile selectedTile = combatMainState.GetSelectedTile();
             if (selectedTile != null)
             {
-                CombatPlayerTurnInput input = new CombatPlayerTurnInput(selectedTile, (selectedTile.transform.position - combatMainState.ActingUnitTile.Unit.transform.position).normalized);
                 madeTurn = true;
-                combatMainState.SetActive(null, false, null);
-                combatMainState.DeactivateTiles();
+                AI_CombatMainState aI_CombatMainState = (AI_CombatMainState)combatMainState;
+
+                Vector3 direction3D = (combatMainState.ActingUnitTile.Unit.transform.position - selectedTile.transform.position).normalized;
+                Vector2 direction2D = new Vector2(direction3D.x, direction3D.z);
+                CombatPlayerTurnInput input = new CombatPlayerTurnInput(selectedTile, direction2D);
+
+                aI_CombatMainState.SetActive(null, false, null, null);
+                aI_CombatMainState.DeactivateTiles();
                 yield return input;
             }
             yield return null;
