@@ -9,6 +9,7 @@ public class UnitBarCombatPreparation : UnitBarDynamic
     [SerializeField] private CombatUnit unitPrefab = null;
 
     private CombatTile currentTile = null;
+    private CombatTile lastTile = null;
     private List<CombatTile> tilesUsed = new List<CombatTile>();
     private CombatUnit currentUnit = null;
     private CombatMap map;
@@ -40,7 +41,8 @@ public class UnitBarCombatPreparation : UnitBarDynamic
     }
     protected override void UnitIconDrag()
     {
-        currentTile?.UpdateState(CombatTile.State.Active);
+        //currentTile?.UpdateState(CombatTile.State.Active);
+        //currentTile?.AddState(CombatTile.State.Active);
         if (RectTransformUtility.RectangleContainsScreenPoint((RectTransform)transform, Input.mousePosition))
         {
             // if mouse over unit bar
@@ -55,10 +57,14 @@ public class UnitBarCombatPreparation : UnitBarDynamic
             IconUI.Current.EnableImage(false);
             Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hitInfo);
             CombatTile selectedTile = map.GetTileInPosition(hitInfo.point);
+            if (lastTile == selectedTile) return;
+
             if (tilesUsed.Contains(selectedTile))
             {
+                lastTile?.RemoveState(CombatTile.State.Selected);
                 currentTile = selectedTile;
-                currentTile.UpdateState(CombatTile.State.Selected);
+                currentTile.AddState(CombatTile.State.Selected);
+                lastTile = selectedTile;
 
                 currentTile.ShowUnitPlaceHolder(currentUnit);
                 canvasUnitUtility.UpdateUnitCount(currentUnit, map);
@@ -67,7 +73,9 @@ public class UnitBarCombatPreparation : UnitBarDynamic
             {
                 currentUnit.gameObject.SetActive(false);
                 canvasUnitUtility.EnableUnitCount(currentUnit, false);
+                currentTile?.RemoveState(CombatTile.State.Selected);
                 currentTile = null;
+                lastTile = null;
             }
         }
     }
@@ -87,7 +95,8 @@ public class UnitBarCombatPreparation : UnitBarDynamic
         if (attacker) map.AddAttackerUnitOnMapPrepare(currentUnit, currentTile);
         else map.AddDefenderUnitOnMapPrepare(currentUnit, currentTile);
 
-        currentTile.UpdateState(CombatTile.State.None);
+        //currentTile.UpdateState(CombatTile.State.None);
+        currentTile.ClearStates();
 
         currentUnit = null;
         currentTile = null;

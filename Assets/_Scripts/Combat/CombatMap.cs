@@ -61,7 +61,7 @@ public class CombatMap : MonoBehaviour
                     middlePos.z - (mapSize.y / 2) * tileScale + y);
                 tile.transform.localScale *= tileScale;
                 tile.name = x / tileScale + ":" + y / tileScale;
-                tile.Set(Mathf.RoundToInt(x / tileScale), Mathf.RoundToInt(y / tileScale), CombatTile.State.None);
+                tile.Set(Mathf.RoundToInt(x / tileScale), Mathf.RoundToInt(y / tileScale));
                 tile.transform.SetParent(transform);
                 tiles.Add(tile);
             }
@@ -71,7 +71,7 @@ public class CombatMap : MonoBehaviour
     {
         foreach(CombatTile tile in tiles)
         {
-            tile.UpdateState(CombatTile.State.None);
+            tile.ClearStates();
         }
     }
 
@@ -106,7 +106,8 @@ public class CombatMap : MonoBehaviour
         if (onRemoveUnit != null) onRemoveUnit(tile.Unit);
         Destroy(tile.Unit.gameObject);
         tile.ClearTile();
-        tile.UpdateState(CombatTile.State.Active);
+        //tile.UpdateState(CombatTile.State.Active);
+        tile.AddState(CombatTile.State.Active);
     }
     public bool IsUnitOnMapPrepare(CombatUnit unit, bool attacker)
     {
@@ -168,7 +169,8 @@ public class CombatMap : MonoBehaviour
         if (onRemoveUnit != null) onRemoveUnit(tile.Unit);
         Destroy(tile.Unit.gameObject);
         tile.ClearTile();
-        tile.UpdateState(CombatTile.State.Active);
+        //tile.UpdateState(CombatTile.State.Active);
+        tile.AddState(CombatTile.State.Active);
     }
 
     // Getters
@@ -444,7 +446,8 @@ public class CombatMap : MonoBehaviour
                     neighbour.fCost = gCost + hCost;
                     neighbour.parentTile = current;
                     Debug.Log(neighbour.Coordinates);
-                    neighbour.UpdateState(CombatTile.State.Highlight);
+                    //neighbour.UpdateState(CombatTile.State.Highlight);
+                    neighbour.AddState(CombatTile.State.Highlight);
                     if (!openTiles.Contains(neighbour)) openTiles.Add(neighbour);
                 }
             }
@@ -536,7 +539,8 @@ public class CombatMap : MonoBehaviour
         List<CombatTile> tilesActive = GetTilesByColomns(colomns);
         foreach (CombatTile tile in tilesActive)
         {
-            tile.UpdateState(CombatTile.State.Active);
+            //tile.UpdateState(CombatTile.State.Active);
+            tile.AddState(CombatTile.State.Active);
         }
         return tilesActive;
     }

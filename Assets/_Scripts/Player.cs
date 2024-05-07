@@ -75,13 +75,16 @@ public class Player : MonoBehaviour
         combatMainState.SetActive(activeTiles, true, actingUnitTile);
         foreach(CombatTile tile in activeTiles)
         {
-            tile.UpdateState(CombatTile.State.Active);
+            //tile.UpdateState(CombatTile.State.Active);
+            tile.AddState(CombatTile.State.Active);
         }
         foreach (CombatTile tile in enemyTiles)
         {
-            tile.UpdateState(CombatTile.State.None);
+            //tile.UpdateState(CombatTile.State.None);
+            tile.ClearStates();
         }
-        actingUnitTile.UpdateState(CombatTile.State.Selected);
+        //actingUnitTile.UpdateState(CombatTile.State.Selected);
+        actingUnitTile.AddState(CombatTile.State.Selected);
     }
     public virtual IEnumerator<CombatPlayerTurnInput> CombatTurnInput() 
     {

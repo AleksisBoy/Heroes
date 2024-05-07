@@ -17,14 +17,16 @@ public class CombatMainState : MonoBehaviour
     {
         if (isActive)
         {
-            canvasUnitUtility.HighlightSelection(activeTiles, actingUnitTile);
+            var selection = canvasUnitUtility.HighlightSelection(activeTiles, actingUnitTile);
+            if (!selection.Item1) return;
+
+            if (selection.Item1.Unit && selection.Item1 != actingUnitTile) canvasUnitUtility.PreviewMovementTiles(selection.Item1, new List<CombatTile>());
+            else canvasUnitUtility.ResetLastPreviewTiles();
 
             if (Input.GetMouseButtonDown(0))
             {
-                var selectTile = canvasUnitUtility.SelectTileOnPointer();
-
-                direction = selectTile.Item2;
-                if (activeTiles.Contains(selectTile.Item1)) selectedTile = selectTile.Item1;
+                direction = selection.Item2;
+                if (activeTiles.Contains(selection.Item1)) selectedTile = selection.Item1;
             }
         }
 

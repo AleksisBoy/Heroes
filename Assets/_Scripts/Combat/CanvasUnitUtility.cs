@@ -19,7 +19,8 @@ public class CanvasUnitUtility : MonoBehaviour
     private List<UnitCountUI> unitCounts = new List<UnitCountUI>();
 
     private CombatTile currentTile = null;
-    private CombatTile.State lastStateTile = CombatTile.State.None;
+    private List<CombatTile> lastPreviewTiles = new List<CombatTile>();
+    private bool resetLastPreviewTiles = false;
     public CombatTile Selection => currentTile;
     private void Awake()
     {
@@ -34,19 +35,20 @@ public class CanvasUnitUtility : MonoBehaviour
     {
         
     }
-    public void HighlightSelection(List<CombatTile> activeTiles, CombatTile actingUnitTile)
+    public (CombatTile,  Vector2) HighlightSelection(List<CombatTile> activeTiles, CombatTile actingUnitTile)
     {
         var selection = SelectTileOnPointer();
         CombatTile selectedTile = selection.Item1;
         Vector2 direction = selection.Item2;
         if(selectedTile != currentTile)
         {
-            currentTile?.UpdateState(lastStateTile);
+            //currentTile?.UpdateState(lastStateTile);
+            currentTile?.RemoveState(CombatTile.State.Selected);
             if (activeTiles.Contains(selectedTile))
             {
                 if(selectedTile.Unit) selectedTile = map.GetAdjacentTileInDirectionWithin(map.GetUnitTile(selectedTile.Unit.Container), activeTiles, direction, actingUnitTile);
-                lastStateTile = selectedTile.S;
-                selectedTile.UpdateState(CombatTile.State.Selected);
+                //selectedTile.UpdateState(CombatTile.State.Selected);
+                selectedTile.AddState(CombatTile.State.Selected);
                 currentTile = selectedTile;
             }
             else
@@ -54,11 +56,38 @@ public class CanvasUnitUtility : MonoBehaviour
                 currentTile = null;
             }
         }
+        return selection;
+    }
+    public void PreviewMovementTiles(CombatTile tile, List<CombatTile> exceptions)
+    {
+        ResetLastPreviewTiles();
+        resetLastPreviewTiles = false;
+        List<CombatTile> previewTiles = map.GetTilesAroundTile(tile, tile.Unit.Container.Data.Speed);
+        foreach(CombatTile exception in exceptions)
+        {
+            if (previewTiles.Contains(exception)) previewTiles.Remove(exception);
+        }
+        foreach(CombatTile previewTile in previewTiles)
+        {
+            //previewTile.UpdateState(CombatTile.State.Highlight);
+            previewTile.AddState(CombatTile.State.Preview);
+        }
+        lastPreviewTiles = previewTiles;
+    }
+    public void ResetLastPreviewTiles()
+    {
+        if (resetLastPreviewTiles) return;
+        resetLastPreviewTiles = true;
+
+        foreach(CombatTile previewTile in lastPreviewTiles)
+        {
+            //previewTile.UpdateToPreviousState();
+            previewTile.RemoveState(CombatTile.State.Preview);
+        }
     }
     public void ResetSelection()
     {
         currentTile = null;
-        lastStateTile = CombatTile.State.None;
     }
     public void SetUnitPopup() // on mouse down
     {

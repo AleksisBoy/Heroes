@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using UnityEditor.ShaderKeywordFilter;
 using UnityEngine;
 
 
@@ -9,60 +10,104 @@ public class CombatTile : MonoBehaviour
 {
     [SerializeField] private SpriteRenderer sr = null;
 
-    [Header("Colors")]
-    [SerializeField] private Color selectedColor = Color.white;
-    [SerializeField] private Color inactiveColor = Color.white;
-    [SerializeField] private Color intersectingColor = Color.white;
-    [SerializeField] private Color activeColor = Color.white;
-    [SerializeField] private Color previewColor = Color.white;
-    [SerializeField] private Color enemyColor = Color.white;
-    [SerializeField] private Color unitTurnColor = Color.white;
-
     // Pathfinding
     [HideInInspector] public float hCost = 0f;
     [HideInInspector] public float gCost = 0f;
     [HideInInspector] public float fCost = 0f;
     [HideInInspector] public CombatTile parentTile = null;
 
-    private State state;
-    public State S => state;
+    private List<State> states = new List<State>();
+
     private Vector2Int coordinates;
     public Vector2Int Coordinates => coordinates;
     //private bool occupied = false;
     private CombatUnit unit = null;
     public CombatUnit Unit => unit;
-    public void Set(int x, int y, State state)
+    public void Set(int x, int y)
     {
-        UpdateState(state);
         coordinates = new Vector2Int(x, y);
         unit = null;
+        UpdateColor();
     }
-    public void UpdateState(State state)
+    public void AddState(State state)
     {
-        this.state = state;
-        switch(state)
+        if (states.Contains(state)) return;
+
+        states.Add(state);
+        UpdateColor();
+    }
+    public void RemoveState(State state)
+    {
+        if (!states.Contains(state)) return;
+
+        states.Remove(state);
+        UpdateColor();
+    }
+    public void ClearStates()
+    {
+        states.Clear();
+        UpdateColor();
+    }
+    public void UpdateColor()
+    {
+        if (states.Count == 0)
         {
-            case State.None:
-                sr.color = inactiveColor;
-                break;
-            case State.Active: 
-                sr.color = activeColor;
-                break;
-            case State.Highlight:
-                sr.color = unitTurnColor;
-                break;
-            case State.Endangered:
-                sr.color = enemyColor;
-                break;
-            case State.Selected:
-                sr.color = selectedColor;
-                break;
-            default:
-                sr.color = inactiveColor;
-                break;
+            sr.color = InternalSettings.Get.InactiveColor;
+        }
+        else if (states.Count == 1)
+        {
+            switch (states[0])
+            {
+                case State.None:
+                    sr.color = InternalSettings.Get.InactiveColor;
+                    break;
+                case State.Active:
+                    sr.color = InternalSettings.Get.ActiveColor;
+                    break;
+                case State.Highlight:
+                    sr.color = InternalSettings.Get.UnitTurnColor;
+                    break;
+                case State.Endangered:
+                    sr.color = InternalSettings.Get.EnemyColor;
+                    break;
+                case State.Preview:
+                    sr.color = InternalSettings.Get.PreviewColor;
+                    break;
+                case State.Selected:
+                    sr.color = InternalSettings.Get.SelectedColor;
+                    break;
+                default:
+                    sr.color = InternalSettings.Get.InactiveColor;
+                    break;
+            }
+        }
+        else if (states.Count == 2)
+        {
+            if (states.Contains(State.Active) && states.Contains(State.Preview))
+            {
+                sr.color = InternalSettings.Get.ActivePreviewColor;
+            }
+            else if(states.Contains(State.Active) && states.Contains(State.Selected))
+            {
+                sr.color = InternalSettings.Get.ActiveSelectedColor;
+            }
+            else
+            {
+                sr.color = Color.black;
+            }
+        }
+        else
+        {
+            if (states.Contains(State.Active) && states.Contains(State.Preview) && states.Contains(State.Selected))
+            {
+                sr.color = InternalSettings.Get.ActiveSelectedPreviewColor;
+            }
+            else
+            {
+                sr.color = Color.black;
+            }
         }
     }
-
     public void ShowUnitPlaceHolder(CombatUnit unitPlacehold)
     {
         unitPlacehold.transform.position = transform.position; 
@@ -109,6 +154,7 @@ public class CombatTile : MonoBehaviour
         Active,
         Selected,
         Endangered, 
-        Highlight
+        Highlight,
+        Preview
     }
 }

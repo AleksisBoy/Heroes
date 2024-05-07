@@ -50,9 +50,11 @@ MonoBehaviour:
   inactiveColor: {r: 0.4716981, g: 0.4716981, b: 0.4716981, a: 0.85882354}
   intersectingColor: {r: 0.9245283, g: 0.44045925, b: 0.44045925, a: 1}
   activeColor: {r: 0, g: 1, b: 0.015686275, a: 1}
-  previewColor: {r: 0, g: 1, b: 0.015686275, a: 0.83137256}
+  previewColor: {r: 0.6981132, g: 0.6981132, b: 0.6981132, a: 1}
   enemyColor: {r: 1, g: 0.3066038, b: 0.3066038, a: 1}
   unitTurnColor: {r: 0.5707547, g: 1, b: 0.92748785, a: 1}
+  activePreviewColor: {r: 0, g: 0.865, b: 0.015686275, a: 1}
+  activeSelectedColor: {r: 0.645, g: 0.879, b: 0.015686275, a: 1}
   hCost: 0
   gCost: 0
   fCost: 0
