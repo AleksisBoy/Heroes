@@ -68,7 +68,8 @@ public class CombatManager : MonoBehaviour
             combatUnits = map.GetAllUnits();
             foreach (CombatUnit unit in combatUnits)
             {
-                unit.ResetATB(Random.Range(0f, 0.25f));
+                unit.ForceSetATB(Random.Range(0f, 0.25f));
+                unit.retaliate = true;
             }
 
             attackingPlayer.StartCombatMainState(map, true);
@@ -95,27 +96,31 @@ public class CombatManager : MonoBehaviour
     // Combat Main State
     private void ProgressATB()
     {
-        foreach (CombatUnit unit in combatUnits)
-        {
-            if (unit.ATB >= 1f && actingUnit == null)
-            {
-                actingUnit = unit;
-                PlayerTurnSetup();
-                return;
-            }
-        }
+        //foreach (CombatUnit unit in combatUnits)
+        //{
+        //    if (unit.ATB >= 1f && actingUnit == null)
+        //    {
+        //        actingUnit = unit;
+        //        PlayerTurnSetup();
+        //        return;
+        //    }
+        //}
+        float deltaTime = Time.deltaTime;
         while (actingUnit == null)
         {
             combatUnits = combatUnits.OrderByDescending(x => x.ATB).ToList();
             foreach (CombatUnit unit in combatUnits)
             {
-                unit.UpdateATB(0.1f);
+                unit.UpdateATB(deltaTime);
                 if (unit.ATB >= 1f && actingUnit == null)
                 {
                     actingUnit = unit;
+                    //break;
                 }
             }
-            time += 0.1f;
+            //if (actingUnit) break;
+
+            time += deltaTime;
             if(time >= 1f)
             {
                 round++;
@@ -124,13 +129,9 @@ public class CombatManager : MonoBehaviour
                 {
                     unit.retaliate = true;
                 }
-                Debug.Log("new round " + round);
-            }
-            if (actingUnit)
-            {
-                PlayerTurnSetup();
             }
         }
+        PlayerTurnSetup();
     }
 
     private void PlayerTurnSetup()
@@ -174,7 +175,7 @@ public class CombatManager : MonoBehaviour
             yield return MoveUnit(actingUnit, selectedTile, activeTiles);
         }
 
-        actingUnit.ResetATB(Random.Range(0f, 0.25f));
+        actingUnit.ResetATB();
         actingUnit = null;
         ProgressATB();
     }
@@ -219,7 +220,7 @@ public class CombatManager : MonoBehaviour
 
         int defendersLeft = UnitAttack(attackingUnit, defendingUnit);
 
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(.5f);
         if (defendersLeft <= 0)
         {
             // attack done with defender dying
@@ -233,7 +234,7 @@ public class CombatManager : MonoBehaviour
 
             int attackersLeft = UnitAttack(defendingUnit, attackingUnit);
 
-            yield return new WaitForSeconds(2f);
+            yield return new WaitForSeconds(.5f);
             if (attackersLeft <= 0)
             {
                 // attack done with attacker dying

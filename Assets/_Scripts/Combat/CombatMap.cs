@@ -316,7 +316,6 @@ public class CombatMap : MonoBehaviour
             if ((angle >= currentValue && angle < topValue) || left)
             {
                 if (left) left = false;
-                Debug.Log(i);
                 CombatTile tile = GetByCoors(centerTile.Coordinates.x + DirectionsAdjacent[i].x, centerTile.Coordinates.y + DirectionsAdjacent[i].y);
                 if (tile && tileRange.Contains(tile) && !tile.Unit)
                 {

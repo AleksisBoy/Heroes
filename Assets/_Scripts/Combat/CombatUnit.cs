@@ -30,9 +30,14 @@ public class CombatUnit : MonoBehaviour
         float initiativePerTurn = unit.Data.Initiative / 10f;
         atb += initiativePerTurn * time;
     }
-    public void ResetATB(float randomValue)
+    public void ResetATB()
     {
-        atb = randomValue; // should depend on luck or morale? multiply by luck or morale?
+        atb -= 1f;
+        if(atb < 0f) atb = 0f;
+    }
+    public void ForceSetATB(float value)
+    {
+        atb = value;
     }
     public int TakeDamage(int damage)
     {

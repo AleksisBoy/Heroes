@@ -1519,7 +1519,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8122607571916138255, guid: d5b48d6c5d191bc4ea541edc739a4f15, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 57.234283
+      value: 57.234314
       objectReference: {fileID: 0}
     - target: {fileID: 9015568571898517029, guid: d5b48d6c5d191bc4ea541edc739a4f15, type: 3}
       propertyPath: heroes.Array.data[0]

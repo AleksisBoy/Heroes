@@ -21,5 +21,5 @@ public class UnitContainer
     {
         count--;
     }
-    public string DebugName { get { return unit.name + " " + count; } }
+    public string DebugName { get { return unit.name + " " + count + " of " + player.name; } }
 }
