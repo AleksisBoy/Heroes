@@ -1,15 +1,27 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Build;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class CombatMainState : MonoBehaviour
 {
     [SerializeField] private CanvasUnitUtility canvasUnitUtility = null;
+    [SerializeField] private CombatATB_UI combatATB = null;
+
+    [SerializeField] private Button buttonDefense = null;
+    [SerializeField] private Button buttonSurrender = null;
+    [SerializeField] private Button buttonSpellbook = null;
+    [SerializeField] private Button buttonSkipTurn = null;
+    [SerializeField] private Button buttonAutoBattle = null;
+    [SerializeField] private Button buttonSettings = null;
 
     protected CombatMap map = null;
     protected CombatTile selectedTile = null;
     private Vector2 direction;
     protected List<CombatTile> activeTiles = null;
+
     protected CombatTile actingUnitTile = null;
     public CombatTile ActingUnitTile => actingUnitTile;
     protected bool isActive = false;
@@ -23,7 +35,7 @@ public class CombatMainState : MonoBehaviour
             if (selection.Item1.Unit && selection.Item1 != actingUnitTile) canvasUnitUtility.PreviewMovementTiles(selection.Item1, new List<CombatTile>());
             else canvasUnitUtility.ResetLastPreviewTiles();
 
-            if (Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject())
             {
                 direction = selection.Item2;
                 if (activeTiles.Contains(selection.Item1)) selectedTile = selection.Item1;
@@ -40,9 +52,10 @@ public class CombatMainState : MonoBehaviour
             canvasUnitUtility.DisableUnitPopup();
         }
     }
-    public virtual void StartCombat(CombatMap map, Player player)
+    public virtual void StartCombat(CombatManager manager, Player player)
     {
-        this.map = map;
+        map = manager.Map;
+        combatATB?.SetupBar(manager);
         selectedTile = null;
         gameObject.SetActive(true);
         List<CombatUnit> allUnits = map.GetAllUnits();
@@ -61,6 +74,18 @@ public class CombatMainState : MonoBehaviour
         {
             selectedTile = null;
             canvasUnitUtility?.ResetSelection();
+
+            buttonDefense.interactable = false;
+            buttonSurrender.interactable = false;
+            buttonSpellbook.interactable = false;
+            buttonSkipTurn.interactable = false;
+        }
+        else
+        {
+            buttonDefense.interactable = true;
+            buttonSurrender.interactable = true;
+            buttonSpellbook.interactable = true;
+            buttonSkipTurn.interactable = true;
         }
     }
     public void DeactivateTiles()
@@ -76,4 +101,29 @@ public class CombatMainState : MonoBehaviour
         return direction;
     }
 
+    // Button calls
+    public void Button_Defense()
+    {
+
+    }
+    public void Button_Surrender()
+    {
+
+    }
+    public void Button_Spellbook()
+    {
+
+    }
+    public void Button_SkipTurn()
+    {
+        selectedTile = actingUnitTile;
+    }
+    public void Button_AutoBattle()
+    {
+
+    }
+    public void Button_Settings()
+    {
+
+    }
 }

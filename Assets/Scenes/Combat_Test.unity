@@ -151,6 +151,14 @@ PrefabInstance:
       propertyPath: playerDebug
       value: 
       objectReference: {fileID: 141293897}
+    - target: {fileID: 4468253765725617724, guid: 1c272217a3b588243b364d49657a1b7c, type: 3}
+      propertyPath: debugUnits.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4468253765725617724, guid: 1c272217a3b588243b364d49657a1b7c, type: 3}
+      propertyPath: debugUnits.Array.data[0]
+      value: 
+      objectReference: {fileID: 11400000, guid: 605cc47470a84e34faed519dbafa40e9, type: 2}
     - target: {fileID: 4468253765725617725, guid: 1c272217a3b588243b364d49657a1b7c, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -1519,7 +1527,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8122607571916138255, guid: d5b48d6c5d191bc4ea541edc739a4f15, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 57.234314
+      value: 57.234283
       objectReference: {fileID: 0}
     - target: {fileID: 9015568571898517029, guid: d5b48d6c5d191bc4ea541edc739a4f15, type: 3}
       propertyPath: heroes.Array.data[0]

@@ -444,7 +444,6 @@ public class CombatMap : MonoBehaviour
                     neighbour.hCost = hCost;
                     neighbour.fCost = gCost + hCost;
                     neighbour.parentTile = current;
-                    Debug.Log(neighbour.Coordinates);
                     //neighbour.UpdateState(CombatTile.State.Highlight);
                     neighbour.AddState(CombatTile.State.Highlight);
                     if (!openTiles.Contains(neighbour)) openTiles.Add(neighbour);

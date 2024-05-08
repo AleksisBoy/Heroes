@@ -10,6 +10,7 @@ public class HeroMount : MapObject
     [SerializeField] private Hero hero = null;
     [SerializeField] private float moveSpeed = 1f;
     [SerializeField] private GameObject selectionCircle = null;
+    [SerializeField] private Unit[] debugUnits = null;
     //public bool ai = false;
 
     private Player player;
@@ -56,6 +57,18 @@ public class HeroMount : MapObject
         //units[5] = unit5;
         UnitContainer unit6 = new UnitContainer(hero.starterUnit, hero.starterUnitCount + 30, playerDebug);
         //units[6] = unit6;
+
+        foreach(Unit debugunit in debugUnits)
+        {
+            UnitContainer newunit = new UnitContainer(debugunit, hero.starterUnitCount, playerDebug);
+            int i = 0;
+            while(i < 7)
+            {
+                if (units[i] == null) break;
+                i++;
+            }
+            units[i] = newunit;
+        }
     }
     private void HeroDailySetup()
     {

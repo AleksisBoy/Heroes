@@ -63,10 +63,10 @@ public class Player : MonoBehaviour
         combatPreparation.StartPreparation(manager, hero, map, attacker);
         currentState = combatPreparation.gameObject;
     }
-    public virtual void StartCombatMainState(CombatMap combatMap, bool attacker)
+    public virtual void StartCombatMainState(CombatManager manager)
     {
         if (currentState != null) currentState.SetActive(false);
-        combatMainState.StartCombat(combatMap, this);
+        combatMainState.StartCombat(manager, this);
         currentState = combatMainState.gameObject;
     }
     public virtual void CombatTurnSetup(CombatMap combatMap, List<CombatTile> activeTiles, List<CombatTile> enemyTiles, CombatTile actingUnitTile)
@@ -75,15 +75,12 @@ public class Player : MonoBehaviour
         combatMainState.SetActive(activeTiles, true, actingUnitTile);
         foreach(CombatTile tile in activeTiles)
         {
-            //tile.UpdateState(CombatTile.State.Active);
             tile.AddState(CombatTile.State.Active);
         }
         foreach (CombatTile tile in enemyTiles)
         {
-            //tile.UpdateState(CombatTile.State.None);
             tile.ClearStates();
         }
-        //actingUnitTile.UpdateState(CombatTile.State.Selected);
         actingUnitTile.AddState(CombatTile.State.Selected);
     }
     public virtual IEnumerator<CombatPlayerTurnInput> CombatTurnInput() 

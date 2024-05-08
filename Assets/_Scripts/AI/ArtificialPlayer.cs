@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class ArtificialPlayer : Player
 {
-    public override void StartCombatMainState(CombatMap combatMap, bool attacker)
+    public override void StartCombatMainState(CombatManager manager)
     {
         AI_CombatMainState aI_CombatMainState = (AI_CombatMainState)combatMainState;
         if(!aI_CombatMainState)
@@ -13,7 +13,7 @@ public class ArtificialPlayer : Player
             return;
         }
         if (currentState.activeSelf) currentState.SetActive(false);
-        aI_CombatMainState.StartCombat(combatMap, this, combatMap.GetEnemyUnitTiles(this));
+        aI_CombatMainState.StartCombat(manager.Map, this, manager.Map.GetEnemyUnitTiles(this));
         currentState = combatMainState.gameObject;
     }
     public override void CombatTurnSetup(CombatMap combatMap, List<CombatTile> activeTiles, List<CombatTile> enemyTiles, CombatTile actingUnitTile)

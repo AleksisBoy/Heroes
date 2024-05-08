@@ -19,4 +19,4 @@ MonoBehaviour:
   healthPoints: 8
   speed: 4
   initiative: 10
-  damageRange: {x: 1, y: 3}
+  damageRange: {x: 1, y: 2}

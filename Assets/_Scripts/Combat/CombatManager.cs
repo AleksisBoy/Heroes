@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,8 +13,15 @@ public class CombatManager : MonoBehaviour
     [SerializeField] private HeroMount attackingHero = null;
     [SerializeField] private HeroMount defendingHero = null;
 
+    public CombatMap Map => map;
     private CombatUnit actingUnit = null;
     private List<CombatUnit> combatUnits = new List<CombatUnit>();
+
+    private Action onProgressATB = null;
+    public Action OnProgressATB { get {  return onProgressATB; }  set { onProgressATB = value; } }
+
+    private Action<CombatUnit> onUnitDestroy = null;
+    public Action<CombatUnit> OnUnitDestroy { get {  return onUnitDestroy; }  set { onUnitDestroy = value; } }
 
     private Dictionary<Unit, int> defenderCasualties = new Dictionary<Unit, int>();
     private Dictionary<Unit, int> attackerCasualties = new Dictionary<Unit, int>();
@@ -68,14 +76,14 @@ public class CombatManager : MonoBehaviour
             combatUnits = map.GetAllUnits();
             foreach (CombatUnit unit in combatUnits)
             {
-                unit.ForceSetATB(Random.Range(0f, 0.25f));
+                unit.ForceSetATB(UnityEngine.Random.Range(0f, 0.25f));
                 unit.retaliate = true;
             }
-
-            attackingPlayer.StartCombatMainState(map, true);
-            defendingPlayer.StartCombatMainState(map, false);
+            attackingPlayer.StartCombatMainState(this);
+            defendingPlayer.StartCombatMainState(this);
 
             ProgressATB();
+
         }
         else if(state == CombatState.Ending)
         {
@@ -131,6 +139,7 @@ public class CombatManager : MonoBehaviour
                 }
             }
         }
+        if(OnProgressATB != null) OnProgressATB();
         PlayerTurnSetup();
     }
 
@@ -269,7 +278,7 @@ public class CombatManager : MonoBehaviour
     }
     private int GetDamage(CombatUnit attackingUnit, CombatUnit defendingUnit)
     {
-        int randomDamage = Random.Range(attackingUnit.Container.Data.DamageRange.x, attackingUnit.Container.Data.DamageRange.y + 1);
+        int randomDamage = UnityEngine.Random.Range(attackingUnit.Container.Data.DamageRange.x, attackingUnit.Container.Data.DamageRange.y + 1);
         int damage = attackingUnit.Container.Count * randomDamage;
 
         if (attackingUnit.Container.Data.Attack >= defendingUnit.Container.Data.Defense)
@@ -284,6 +293,7 @@ public class CombatManager : MonoBehaviour
     }
     private void DestroyUnit(CombatUnit unit)
     {
+        OnUnitDestroy(unit);
         if(combatUnits.Contains(unit)) combatUnits.Remove(unit);
         map.RemoveUnit(unit);
     }
@@ -323,6 +333,10 @@ public class CombatManager : MonoBehaviour
             units.Add(container);
         }
         return units;
+    }
+    public List<CombatUnit> GetCombatUnits()
+    {
+        return new List<CombatUnit>(combatUnits);
     }
     //private Player GetUnitsPlayer(CombatUnit unit)
     //{
