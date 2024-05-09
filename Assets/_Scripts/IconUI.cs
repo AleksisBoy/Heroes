@@ -31,7 +31,7 @@ public class IconUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
         container.Assign(this);
         this.draggable = draggable;
     }
-    public void Set(CombatUnit combatUnit, IconContainerUI container, bool draggable)
+    public virtual void Set(CombatUnit combatUnit, IconContainerUI container, bool draggable)
     {
         data = new IconData(typeof(Unit).ToString(), combatUnit.Container.Data.name, 0);
         image.sprite = combatUnit.Container.Data.Sprite;

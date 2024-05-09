@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class CanvasUnitUtility : MonoBehaviour
 {
@@ -38,6 +39,14 @@ public class CanvasUnitUtility : MonoBehaviour
     public (CombatTile,  Vector2) HighlightSelection(List<CombatTile> activeTiles, CombatTile actingUnitTile)
     {
         var selection = SelectTileOnPointer();
+
+        if (selection.Item1 == null && CombatUnitIconUI.HoverOver)
+        {
+            selection.Item1 = map.GetUnitTile(CombatUnitIconUI.HoverOver.Unit.Container);
+            Vector3 dir3D = (actingUnitTile.transform.position - selection.Item1.transform.position).normalized;
+            selection.Item2 = new Vector2(dir3D.x, dir3D.z);
+        }
+
         CombatTile selectedTile = selection.Item1;
         Vector2 direction = selection.Item2;
         if(selectedTile != currentTile)
@@ -105,6 +114,10 @@ public class CanvasUnitUtility : MonoBehaviour
     }
     public (CombatTile, Vector2) SelectTileOnPointer()
     {
+        Heroes_StandaloneInputModule sim = EventSystem.current.currentInputModule as Heroes_StandaloneInputModule; 
+        if (sim.GetCurrent()
+            && sim.GetCurrent().layer == LayerMask.NameToLayer("UI")) return (null, Vector2.zero);
+
         Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hitInfo);
         if (hitInfo.transform == null) return (null, Vector2.zero);
 

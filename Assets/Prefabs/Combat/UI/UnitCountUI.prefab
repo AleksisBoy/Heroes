@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4374473160700408724}
   - component: {fileID: 3663668264636973529}
   - component: {fileID: 2751061559884691243}
-  m_Layer: 5
+  m_Layer: 2
   m_Name: CountText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -146,7 +146,7 @@ GameObject:
   - component: {fileID: 3091714770669280737}
   - component: {fileID: 3212957445949685222}
   - component: {fileID: 7990938184478757987}
-  m_Layer: 5
+  m_Layer: 2
   m_Name: UnitCountUI
   m_TagString: Untagged
   m_Icon: {fileID: 0}

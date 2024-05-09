@@ -1,14 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class IconContainerUI : MonoBehaviour
 {
+    [SerializeField] private Image background = null;
+
     private IconUI icon = null;
 
     public IconUI Icon { get { return icon; } }
 
     public RectTransform RT { get { return (RectTransform)transform; } }
+    public Image Background => background;
 
     public IconUI TakeOut()
     {

@@ -293,7 +293,7 @@ public class CombatManager : MonoBehaviour
     }
     private void DestroyUnit(CombatUnit unit)
     {
-        OnUnitDestroy(unit);
+        if(OnUnitDestroy != null)OnUnitDestroy(unit);
         if(combatUnits.Contains(unit)) combatUnits.Remove(unit);
         map.RemoveUnit(unit);
     }
@@ -338,25 +338,13 @@ public class CombatManager : MonoBehaviour
     {
         return new List<CombatUnit>(combatUnits);
     }
-    //private Player GetUnitsPlayer(CombatUnit unit)
-    //{
-    //    foreach(UnitContainer unitContainer in attackingHero.Units)
-    //    {
-    //        if(unitContainer == unit.Container)
-    //        {
-    //            return attackingPlayer;
-    //        }
-    //    }
-    //    foreach(UnitContainer unitContainer in defendingHero.Units)
-    //    {
-    //        if(unitContainer == unit.Container)
-    //        {
-    //            return defendingPlayer;
-    //        }
-    //    }
+    public Player GetPlayer(CombatUnit unit)
+    {
+        if (map.AttackerUnits.Contains(unit)) return attackingPlayer;
+        if (map.DefenderUnits.Contains(unit)) return defendingPlayer;
 
-    //    return null;
-    //}
+        return null;
+    }
 }
 public enum CombatState
 {
