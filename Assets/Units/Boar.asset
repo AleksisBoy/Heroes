@@ -18,5 +18,5 @@ MonoBehaviour:
   defense: 2
   healthPoints: 12
   speed: 4
-  initiative: 12
+  initiative: 20
   damageRange: {x: 2, y: 4}

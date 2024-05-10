@@ -54,7 +54,7 @@ public class HeroMount : MapObject
         UnitContainer unit4 = new UnitContainer(hero.starterUnit, hero.starterUnitCount + 20, playerDebug);
         units[4] = unit4;
         UnitContainer unit5 = new UnitContainer(hero.starterUnit, hero.starterUnitCount + 25, playerDebug);
-        //units[5] = unit5;
+        units[5] = unit5;
         UnitContainer unit6 = new UnitContainer(hero.starterUnit, hero.starterUnitCount + 30, playerDebug);
         //units[6] = unit6;
 
@@ -65,7 +65,7 @@ public class HeroMount : MapObject
             while(i < 7)
             {
                 if (units[i] == null) break;
-                i++;
+                if (++i >= 7) return;
             }
             units[i] = newunit;
         }

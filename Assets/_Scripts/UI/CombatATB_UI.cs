@@ -1,9 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using UnityEngine;
-using static UnityEngine.UI.CanvasScaler;
 
 public class CombatATB_UI : MonoBehaviour
 {
@@ -13,94 +11,84 @@ public class CombatATB_UI : MonoBehaviour
     [SerializeField] private IconContainerUI iconContainerPrefab = null;
     [SerializeField] private int iconCount = 10;
 
-    //private Dictionary<CombatUnit, IconContainerUI> icons = new Dictionary<CombatUnit, IconContainerUI>();
     private CombatManager manager = null;
     public void SetupBar(CombatManager manager)
     {
-        if(!this.manager) manager.OnProgressATB += UpdateUI;
+        if (!this.manager) manager.OnProgressATB += UpdateUI;
         this.manager = manager;
-        //this.manager.OnUnitDestroy += RemoveUnitUI;
-        //icons.Clear();
-        foreach(Transform child in grid)
-        {
-            Destroy(child.gameObject);
-        }
-        List<CombatUnit> units = manager.GetCombatUnits().OrderByDescending(x => x.ATB).ToList();
 
+        UpdateUI();
+    }
+    private void CreateCurrentUnitIcon(Color playerColor, List<CombatUnit> units)
+    {
         if (currentUnitIcon.Icon) Destroy(currentUnitIcon.TakeOut().gameObject);
 
-        Color backColor = manager.GetPlayer(units[0]).PlayerColor;
+        Color backColor = playerColor;
         backColor.a = 0.5f;
         currentUnitIcon.Background.color = backColor;
 
         IconUI current = Instantiate(iconPrefab, currentUnitIcon.transform);
         current.Set(units[0], currentUnitIcon, false);
-
-        int unitIndex = 0;
-        int iconAmount = 0;
-        while(iconAmount < iconCount)
+    }
+    private static Dictionary<float, CombatUnit> GetSortedDictionaryOfUnits(List<CombatUnit> units, int maxIcons)
+    {
+        int globalCycle = 0;
+        Dictionary<float, CombatUnit> unitDic = new Dictionary<float, CombatUnit>();
+        while (unitDic.Count < maxIcons)
         {
-            CombatUnit unit = units[unitIndex];
+            foreach (CombatUnit unit1 in units)
+            {
+                int localCycle = 0;
+                float remainToATB = CombatManager.GetRemainToATB(unit1, localCycle + globalCycle);
+                while (remainToATB < 1 + globalCycle)
+                {
+                    bool added = unitDic.TryAdd(remainToATB, unit1);
+                    if (!added) Debug.LogError("didnt add " + unit1.Container.DebugName + " atb remain " + remainToATB);
+                    localCycle++;
+                    remainToATB = CombatManager.GetRemainToATB(unit1, localCycle + globalCycle);
+                }
+            }
+
+            globalCycle++;
+        }
+        unitDic = unitDic.OrderBy(x => x.Key).ToDictionary(x => x.Key, x => x.Value);
+        return unitDic;
+    }
+
+    private void CreateIconsForUnitList(List<CombatUnit> list, int maxIcons)
+    {
+        for(int i = 0; i < maxIcons; i++)
+        {
             IconContainerUI container = Instantiate(iconContainerPrefab, grid);
-            backColor = manager.GetPlayer(unit).PlayerColor;
+            Color backColor = manager.GetPlayer(list[i]).PlayerColor;
             backColor.a = 0.5f;
             container.Background.color = backColor;
 
             RectTransform rtContainer = (RectTransform)container.transform;
             rtContainer.anchorMin = new Vector2(0f, 0.5f);
             rtContainer.anchorMax = new Vector2(0f, 0.5f);
-            rtContainer.anchoredPosition = new Vector2((iconContainerPrefab.RT.sizeDelta.x / 2f) + (iconAmount * iconContainerPrefab.RT.sizeDelta.x), 0f);
+            rtContainer.anchoredPosition = new Vector2((iconContainerPrefab.RT.sizeDelta.x / 2f) + (i * iconContainerPrefab.RT.sizeDelta.x), 0f);
 
             IconUI icon = Instantiate(iconPrefab, container.transform);
-            //icon.Set(unit.GetType().ToString(), unit.Container.Data.name, 1, unit.Container.Data.Sprite, unit.Container.Count, container, false);
-            icon.Set(unit, container, false);
-            //icons.Add(unit, container);
-            if(++unitIndex >= units.Count)
-            {
-                unitIndex = 0;
-            }
-            iconAmount++;
+            icon.Set(list[i], container, false);
         }
-        //foreach (CombatUnit unit in units)
-        //{
-        //    IconContainerUI container = Instantiate(iconContainerPrefab, grid);
-        //    RectTransform rtContainer = (RectTransform)container.transform;
-        //    rtContainer.anchorMin = new Vector2(0f, 0.5f);
-        //    rtContainer.anchorMax = new Vector2(0f, 0.5f);
-        //    rtContainer.anchoredPosition = new Vector2((iconContainerPrefab.RT.sizeDelta.x / 2f) + (icons.Count * iconContainerPrefab.RT.sizeDelta.x), 0f);
-
-        //    IconUI icon = Instantiate(iconPrefab, container.transform);
-        //    icon.Set(unit.GetType().ToString(), unit.Container.Data.name, 1, unit.Container.Data.Sprite, unit.Container.Count, container, false);
-
-        //    icons.Add(unit, container);
-        //}
     }
     private void UpdateUI()
     {
-        SetupBar(manager);
-        //List<CombatUnit> units = manager.GetCombatUnits();
+        foreach (Transform child in grid)
+        {
+            Destroy(child.gameObject);
+        }
+        List<CombatUnit> units = manager.GetCombatUnits().OrderByDescending(x => x.ATB).ToList();
 
-        //foreach(Transform child in currentUnitIcon.transform)
-        //{
-        //    Destroy(child.gameObject);
-        //}
-        //IconUI current = Instantiate(iconPrefab, currentUnitIcon.transform);
-        //current.Set(units[0], currentUnitIcon, false);
-        //foreach(CombatUnit unit in icons.Keys)
-        //{
-        //    icons[unit].Icon.Set(unit, icons[unit], false);
-        //    RectTransform rtIcon = (RectTransform)icons[unit].transform;
-        //    rtIcon.anchoredPosition = new Vector2((iconContainerPrefab.RT.sizeDelta.x / 2f) + (units.IndexOf(unit) * iconContainerPrefab.RT.sizeDelta.x), 0f);
-        //}
-    }
-    public void RemoveUnitUI(CombatUnit unit)
-    {
-        //Destroy(icons[unit].gameObject);
-        //icons.Remove(unit);
+        int maxIcons = Mathf.Max(units.Count, iconCount);
+        Dictionary<float, CombatUnit> unitDic = GetSortedDictionaryOfUnits(units, maxIcons);
+
+        CreateCurrentUnitIcon(manager.GetPlayer(units[0]).PlayerColor, units);
+        CreateIconsForUnitList(unitDic.Values.ToList(), maxIcons);
     }
     private void OnDestroy()
     {
         manager.OnProgressATB -= UpdateUI;
-        manager.OnUnitDestroy -= RemoveUnitUI;
     }
 }

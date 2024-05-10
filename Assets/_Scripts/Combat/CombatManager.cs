@@ -34,6 +34,7 @@ public class CombatManager : MonoBehaviour
     private float time = 0f;
     private int round = 0;
     public float GameTime => time;
+    public int Round => round;
 
     public void StartMatch(HeroMount attacker, HeroMount defender)
     {
@@ -104,31 +105,20 @@ public class CombatManager : MonoBehaviour
     // Combat Main State
     private void ProgressATB()
     {
-        //foreach (CombatUnit unit in combatUnits)
-        //{
-        //    if (unit.ATB >= 1f && actingUnit == null)
-        //    {
-        //        actingUnit = unit;
-        //        PlayerTurnSetup();
-        //        return;
-        //    }
-        //}
-        float deltaTime = Time.deltaTime;
+        CombatUnit fastestUnit = GetFastestUnitOnMap(out float remainTime);
         while (actingUnit == null)
         {
             combatUnits = combatUnits.OrderByDescending(x => x.ATB).ToList();
             foreach (CombatUnit unit in combatUnits)
             {
-                unit.UpdateATB(deltaTime);
+                unit.UpdateATB(remainTime);
                 if (unit.ATB >= 1f && actingUnit == null)
                 {
                     actingUnit = unit;
-                    //break;
                 }
             }
-            //if (actingUnit) break;
 
-            time += deltaTime;
+            time += remainTime;
             if(time >= 1f)
             {
                 round++;
@@ -142,7 +132,6 @@ public class CombatManager : MonoBehaviour
         if(OnProgressATB != null) OnProgressATB();
         PlayerTurnSetup();
     }
-
     private void PlayerTurnSetup()
     {
         Player playerActing = actingUnit.Container.Player;
@@ -337,6 +326,26 @@ public class CombatManager : MonoBehaviour
     public List<CombatUnit> GetCombatUnits()
     {
         return new List<CombatUnit>(combatUnits);
+    }
+    public static float GetRemainToATB(CombatUnit unit, int cycle)
+    {
+        return (Mathf.Clamp01(1f - unit.ATB) + cycle) / (unit.Container.Data.Initiative / 10f);
+    }
+    private CombatUnit GetFastestUnitOnMap(out float remainAtb)
+    {
+        float lowestValue = 10f;
+        CombatUnit fastestUnit = null;
+        foreach (CombatUnit unit in combatUnits)
+        {
+            float remainToATB = GetRemainToATB(unit, 0);
+            if (remainToATB < lowestValue)
+            {
+                lowestValue = remainToATB;
+                fastestUnit = unit;
+            }
+        }
+        remainAtb = lowestValue;
+        return fastestUnit;
     }
     public Player GetPlayer(CombatUnit unit)
     {
