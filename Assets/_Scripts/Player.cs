@@ -88,13 +88,13 @@ public class Player : MonoBehaviour
         bool madeTurn = false;
         while (!madeTurn)
         {
-            CombatTile selectedTile = combatMainState.GetSelectedTile();
-            if (selectedTile != null)
+            CombatPlayerTurnInput playerInput = combatMainState.GetPlayerInput();
+            if (playerInput != null)
             {
                 madeTurn = true;
                 combatMainState.SetActive(null, false, null);
                 combatMainState.DeactivateTiles();
-                yield return new CombatPlayerTurnInput(selectedTile, combatMainState.GetSelectedTileDirection());
+                yield return playerInput;
             }
             yield return null;
         }

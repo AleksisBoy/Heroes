@@ -37,7 +37,7 @@ public class CombatUnit : MonoBehaviour
     }
     public void ForceSetATB(float value)
     {
-        atb = value;
+        atb = Mathf.Clamp01(value);
     }
     public int TakeDamage(int damage)
     {

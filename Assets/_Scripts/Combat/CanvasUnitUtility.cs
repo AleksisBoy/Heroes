@@ -33,8 +33,9 @@ public class CanvasUnitUtility : MonoBehaviour
         previewDamageUI.gameObject.SetActive(false);
     }
 
-    public (CombatTile,  Vector2) HighlightSelection(List<CombatTile> activeTiles, CombatTile actingUnitTile)
+    public (CombatTile,  Vector2) HighlightSelection(List<CombatTile> activeTiles, CombatTile actingUnitTile, out bool selectedTileIsAdjacent)
     {
+        selectedTileIsAdjacent = false;
         var selection = SelectTileOnPointer();
 
         if (selection.Item1 == null && CombatUnitIconUI.HoverOver)
@@ -56,6 +57,7 @@ public class CanvasUnitUtility : MonoBehaviour
                     PreviewDamage(actingUnitTile.Unit, selectedTile.Unit);
                     selectedTile = map.GetAdjacentTileInDirectionWithin(map.GetUnitTile(selectedTile.Unit.Container), activeTiles, direction, actingUnitTile, out float angle);
                     SwitchCursorToAttacking(angle);
+                    selectedTileIsAdjacent = true;
                 }
                 else if(selectedTile.Unit)
                 {

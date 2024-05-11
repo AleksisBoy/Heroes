@@ -17,8 +17,8 @@ public class CombatMainState : MonoBehaviour
     [SerializeField] private Button buttonAutoBattle = null;
     [SerializeField] private Button buttonSettings = null;
 
+    protected CombatPlayerTurnInput playerInput = null;
     protected CombatMap map = null;
-    protected CombatTile selectedTile = null;
     private Vector2 direction;
     protected List<CombatTile> activeTiles = null;
     protected CombatTile actingUnitTile = null;
@@ -28,7 +28,7 @@ public class CombatMainState : MonoBehaviour
     {
         if (isActive)
         {
-            var selection = canvasUnitUtility.HighlightSelection(activeTiles, actingUnitTile);
+            var selection = canvasUnitUtility.HighlightSelection(activeTiles, actingUnitTile, out bool selectedTileIsAdjacent);
             if (!selection.Item1) return;
 
             if (selection.Item1.Unit && selection.Item1 != actingUnitTile) canvasUnitUtility.PreviewMovementTiles(selection.Item1, new List<CombatTile>());
@@ -36,8 +36,11 @@ public class CombatMainState : MonoBehaviour
 
             if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject())
             {
-                direction = selection.Item2;
-                if (activeTiles.Contains(selection.Item1)) selectedTile = selection.Item1;
+                if (activeTiles.Contains(selection.Item1))
+                {
+                    if (selectedTileIsAdjacent) playerInput = CombatPlayerTurnInput.Attack(selection.Item1, selection.Item2);
+                    else playerInput = CombatPlayerTurnInput.Move(selection.Item1);
+                }
             }
         }
 
@@ -55,7 +58,6 @@ public class CombatMainState : MonoBehaviour
     {
         map = manager.Map;
         combatATB?.SetupBar(manager);
-        selectedTile = null;
         gameObject.SetActive(true);
         List<CombatUnit> allUnits = map.GetAllUnits();
         canvasUnitUtility.SetAllUnits(allUnits);
@@ -69,9 +71,9 @@ public class CombatMainState : MonoBehaviour
         this.activeTiles = activeTiles;
         this.actingUnitTile = actingUnitTile;
         isActive = state;
+        playerInput = null;
         if (!state)
         {
-            selectedTile = null;
             canvasUnitUtility?.ResetSelection();
             InternalSettings.SwitchCursorTo(InternalSettings.CursorState.Busy);
 
@@ -92,19 +94,18 @@ public class CombatMainState : MonoBehaviour
     {
         map.DeactivateTiles();
     }
-    public CombatTile GetSelectedTile()
-    {
-        return selectedTile;
-    }
     public Vector2 GetSelectedTileDirection()
     {
         return direction;
     }
-
+    public CombatPlayerTurnInput GetPlayerInput()
+    {
+        return playerInput;
+    }
     // Button calls
     public void Button_Defense()
     {
-
+        playerInput = CombatPlayerTurnInput.Defend();
     }
     public void Button_Surrender()
     {
@@ -116,7 +117,7 @@ public class CombatMainState : MonoBehaviour
     }
     public void Button_SkipTurn()
     {
-        selectedTile = actingUnitTile;
+        playerInput = CombatPlayerTurnInput.Wait();
     }
     public void Button_AutoBattle()
     {

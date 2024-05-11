@@ -69,12 +69,15 @@ public class AI_CombatMainState : CombatMainState
     }
     private Node.Status AttackUnit()
     {
-        selectedTile = closestEnemyUnitTile;
+        Vector3 direction3D = (ActingUnitTile.Unit.transform.position - closestEnemyUnitTile.transform.position).normalized;
+        Vector2 direction2D = new Vector2(direction3D.x, direction3D.z);
+        playerInput = CombatPlayerTurnInput.Attack(closestEnemyUnitTile, direction2D);
         return Node.Status.SUCCESS;
     }
     private Node.Status GoToClosestTileToEnemy()
     {
-        selectedTile = map.GetClosestTileToTile(actingUnitTile, closestEnemyUnitTile, activeTiles);
+        CombatTile closestTileToEnemy = map.GetClosestTileToTile(actingUnitTile, closestEnemyUnitTile, activeTiles);
+        playerInput = CombatPlayerTurnInput.Move(closestTileToEnemy);
         return Node.Status.SUCCESS;
     }
     private IEnumerator Behave()
@@ -92,19 +95,6 @@ public class AI_CombatMainState : CombatMainState
         this.enemyUnitsTiles = enemyUnitsTiles;
         closestEnemyUnitTile = null;
         isActive = state;
-        if (!state)
-        {
-            selectedTile = null;
-        }
-    }
-    private Node.Status MoveToTile()
-    {
-        // needs to know the unit its supposed to move
-        // all enemy(player's) units
-        // calculate all possible attacks and prioritize them by efficiency of the attack
-        // make a move with the most efficient attack or move
-        // move would be towards the closest unit or unit that is most dangerous in enemy pool
-        selectedTile = map.GetRandomFreeTile(activeTiles);
-        return Node.Status.SUCCESS;
+        playerInput = null;
     }
 }

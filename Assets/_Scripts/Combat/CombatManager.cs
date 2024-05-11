@@ -13,6 +13,9 @@ public class CombatManager : MonoBehaviour
     [SerializeField] private HeroMount attackingHero = null;
     [SerializeField] private HeroMount defendingHero = null;
 
+    [Header("Settings")]
+    [SerializeField] private float tinyDelay = 0.05f;
+
     public CombatMap Map => map;
     private CombatUnit actingUnit = null;
     private List<CombatUnit> combatUnits = new List<CombatUnit>();
@@ -150,8 +153,7 @@ public class CombatManager : MonoBehaviour
     {
         waitingForResponse = true;
         var playerEnum = player.CombatTurnInput();
-        CombatTile selectedTile = null;
-        Vector2 pressDirection = Vector2.zero;
+        CombatPlayerTurnInput playerInput = null;
         while (playerEnum.MoveNext())
         {
             var input = playerEnum.Current;
@@ -160,24 +162,30 @@ public class CombatManager : MonoBehaviour
                 yield return null;
                 continue;
             }
-            selectedTile = input.selectedTile;
-            pressDirection = input.direction;
+            playerInput = input;
             break;
         }
-        if (selectedTile.Unit && selectedTile.Unit.IsOpponent(actingUnit))
+        if(playerInput.action == CombatPlayerTurnInput.PlayerAction.Move)
         {
-            yield return Attack(actingUnit, selectedTile.Unit, pressDirection, activeTiles);
+            yield return MoveUnitAction(actingUnit, playerInput.selectedTile, activeTiles);
         }
-        else
+        else if(playerInput.action == CombatPlayerTurnInput.PlayerAction.Attack)
         {
-            yield return MoveUnit(actingUnit, selectedTile, activeTiles);
+            yield return AttackAction(actingUnit, playerInput.selectedTile.Unit, playerInput.direction, activeTiles);
+        }
+        else if(playerInput.action == CombatPlayerTurnInput.PlayerAction.Wait)
+        {
+            yield return WaitAction(actingUnit);
+        }
+        else if(playerInput.action == CombatPlayerTurnInput.PlayerAction.Defend)
+        {
+            Debug.LogError("DEFEND ACTION IS NOT IMPLEMENTED ");
         }
 
-        actingUnit.ResetATB();
         actingUnit = null;
         ProgressATB();
     }
-    private IEnumerator MoveUnit(CombatUnit unit, CombatTile tile, List<CombatTile> tileRange)
+    private IEnumerator MoveUnitAction(CombatUnit unit, CombatTile tile, List<CombatTile> tileRange)
     {
         CombatTile previousTile = map.GetUnitTile(unit.Container);
         previousTile.ClearTile();
@@ -205,13 +213,14 @@ public class CombatManager : MonoBehaviour
         tile.SetUnit(unit);
         tile.UpdateUnitTransform();
         unit.Visual.Animator.SetFloat("Speed01", 0f);
-        yield return null;
+        unit.ResetATB();
+        yield return new WaitForSeconds(tinyDelay);
     }
-    private IEnumerator Attack(CombatUnit attackingUnit, CombatUnit defendingUnit, Vector2 pressDirection, List<CombatTile> activeTiles)
+    private IEnumerator AttackAction(CombatUnit attackingUnit, CombatUnit defendingUnit, Vector2 pressDirection, List<CombatTile> activeTiles)
     {
         CombatTile adjacentTile = map.GetAdjacentTileInDirectionWithin(map.GetUnitTile(defendingUnit.Container), activeTiles, pressDirection, map.GetUnitTile(attackingUnit.Container), out float angle);
 
-        yield return MoveUnit(attackingUnit, adjacentTile, activeTiles);
+        yield return MoveUnitAction(attackingUnit, adjacentTile, activeTiles);
 
         attackingUnit.transform.forward = defendingUnit.transform.position - attackingUnit.transform.position;
         defendingUnit.transform.forward = attackingUnit.transform.position - defendingUnit.transform.position;
@@ -244,6 +253,11 @@ public class CombatManager : MonoBehaviour
         // attack done with noone dying
         map.GetUnitTile(attackingUnit.Container).UpdateUnitRotation();
         map.GetUnitTile(defendingUnit.Container).UpdateUnitRotation();
+    }
+    private IEnumerator WaitAction(CombatUnit waitingUnit)
+    {
+        waitingUnit.ForceSetATB(0.5f);
+        yield return new WaitForSeconds(tinyDelay);
     }
     private int UnitAttack(CombatUnit attackingUnit, CombatUnit defendingUnit)
     {
@@ -383,12 +397,32 @@ public enum CombatState
 }
 public class CombatPlayerTurnInput
 {
+    public PlayerAction action;
     public CombatTile selectedTile;
     public Vector2 direction;
 
-    public CombatPlayerTurnInput(CombatTile s, Vector2 d)
+    public static CombatPlayerTurnInput Move(CombatTile tile)
     {
-        selectedTile = s;
-        direction = d;
+        return new CombatPlayerTurnInput() { action = PlayerAction.Move, selectedTile = tile };
+    }
+    public static CombatPlayerTurnInput Attack(CombatTile tile, Vector2 direction)
+    {
+        return new CombatPlayerTurnInput() { action = PlayerAction.Attack, selectedTile = tile, direction = direction };
+    }
+    public static CombatPlayerTurnInput Wait()
+    {
+        return new CombatPlayerTurnInput() { action = PlayerAction.Wait };
+    }
+    public static CombatPlayerTurnInput Defend()
+    {
+        return new CombatPlayerTurnInput() { action = PlayerAction.Defend };
+    }
+    
+    public enum PlayerAction
+    {
+        Move,
+        Attack,
+        Wait,
+        Defend
     }
 }
