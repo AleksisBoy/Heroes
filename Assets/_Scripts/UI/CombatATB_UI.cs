@@ -89,6 +89,6 @@ public class CombatATB_UI : MonoBehaviour
     }
     private void OnDestroy()
     {
-        manager.OnProgressATB -= UpdateUI;
+        if(manager) manager.OnProgressATB -= UpdateUI;
     }
 }

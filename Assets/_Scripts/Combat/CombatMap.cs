@@ -315,11 +315,14 @@ public class CombatMap : MonoBehaviour
         float currentValue = 0.0625f;
         int i = 0;
         int incrementer = 1;
+        float valueIncrementer = 0.125f;
+        bool foundTargetTile = false;
         while (adjacentTilesLeft.Count > 0)
         {
             bool left = false;
             float topValue = currentValue + 0.125f;
             if (topValue > 1f) topValue -= 1f;
+
             // special case for left direction
             if(currentValue >= 0.9375f || currentValue < 0.0625f)
             {
@@ -333,6 +336,11 @@ public class CombatMap : MonoBehaviour
                 if (left) left = false;
 
                 CombatTile tile = GetByCoors(centerTile.Coordinates.x + DirectionsAdjacent[i].x, centerTile.Coordinates.y + DirectionsAdjacent[i].y);
+                if (adjacentTilesLeft.Contains(tile))
+                {
+                    adjacentTilesLeft.Remove(tile);
+                }
+
                 if (tile && tileRange.Contains(tile) && !tile.Unit)
                 {
                     adjacentTile = tile;
@@ -343,46 +351,35 @@ public class CombatMap : MonoBehaviour
                     adjacentTile = tile;
                     break;
                 }
-                else
+                else if(!foundTargetTile)
                 {
-                    if(adjacentTilesLeft.Contains(tile)) adjacentTilesLeft.Remove(tile);
-                    // lowest distance to closest and active tile
-                    float diff1 = Mathf.Abs(angle - currentValue);
-                    float diff2 = Mathf.Abs(angle - topValue);
-                    if (diff1 < diff2)
+                    if (angle <= 0.5f)
                     {
-                        angle -= 0.125f;
-                        if (angle < 0f) angle += 1f;
-                        currentValue -= 0.125f;
-                        if (currentValue < 0f) currentValue += 1f;
-
+                        valueIncrementer = -0.125f;
                         incrementer = -1;
-                        i += incrementer;
-                        if (i < 0) i = 7;
                     }
                     else
                     {
-                        angle += 0.125f;
-                        if(angle > 1f) angle -= 1f;
-                        currentValue += 0.125f;
-                        if (currentValue > 1f) currentValue -= 1f;
-
+                        valueIncrementer = 0.125f;
                         incrementer = 1;
-                        i += incrementer;
-                        if (i > 7) i = 0;
                     }
-
-                    continue;
+                    foundTargetTile = true;
                 }
             }
-            currentValue += 0.125f;
-            if (currentValue > 1f) currentValue -= 1f;
+
+            if(foundTargetTile) angle += valueIncrementer;
+            if (angle < 0f) angle += 1f;
+            else if (angle >= 1f) angle -= 1f;
+
+            currentValue += valueIncrementer;
+            if (currentValue >= 1f) currentValue -= 1f;
+            else if (currentValue < 0f) currentValue += 1f;
 
             i += incrementer;
-            if (i > 7) i = 0;
-            else if (i < 0) i = 7;
+            if (i < 0) i = 7;
+            else if (i > 7) i = 0;
         }
-        
+
         return adjacentTile;
     }
     public Stack<CombatTile> GetPathToTile(CombatTile startingTile, CombatTile endingTile, List<CombatTile> tileRange)
