@@ -44,6 +44,43 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1a5d3e86360526841b52d98f52ed0894, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cursors:
+  - state: 0
+    texture: {fileID: 2800000, guid: b5901dc985a96f54ebf77c7e5e530d05, type: 3}
+    hotspot: {x: 0, y: 0}
+  - state: 1
+    texture: {fileID: 2800000, guid: 93b568615eb79bf408fbf0f34c216d3e, type: 3}
+    hotspot: {x: 0, y: 0}
+  - state: 4
+    texture: {fileID: 2800000, guid: ee4dafbb30d981b4e940cabcfdcb6015, type: 3}
+    hotspot: {x: 32, y: 16}
+  - state: 5
+    texture: {fileID: 2800000, guid: 3409224e40be31347ae63fa5d8f11b76, type: 3}
+    hotspot: {x: 32, y: 0}
+  - state: 6
+    texture: {fileID: 2800000, guid: 5621193d770af1647914aadce693d627, type: 3}
+    hotspot: {x: 16, y: 0}
+  - state: 7
+    texture: {fileID: 2800000, guid: c8a658a139a46444e8a28e2b2901a724, type: 3}
+    hotspot: {x: 0, y: 0}
+  - state: 8
+    texture: {fileID: 2800000, guid: 1566317cb043874448ac5bec6a8d43d3, type: 3}
+    hotspot: {x: 0, y: 16}
+  - state: 9
+    texture: {fileID: 2800000, guid: 8940189654c68374aaeb100e79f3069c, type: 3}
+    hotspot: {x: 0, y: 32}
+  - state: 10
+    texture: {fileID: 2800000, guid: 252a56bd0ba99a64da9d73615b906e7c, type: 3}
+    hotspot: {x: 16, y: 32}
+  - state: 11
+    texture: {fileID: 2800000, guid: 107ca84710b1a25459c9815bf166335c, type: 3}
+    hotspot: {x: 32, y: 32}
+  - state: 2
+    texture: {fileID: 2800000, guid: 76ebedc522cf6c742871a8480f1237a4, type: 3}
+    hotspot: {x: 16, y: 16}
+  - state: 3
+    texture: {fileID: 2800000, guid: 6b1e6f9d0104f444b886173decca28d3, type: 3}
+    hotspot: {x: 0, y: 0}
   selectedColor: {r: 0.98039216, g: 1, b: 0, a: 1}
   inactiveColor: {r: 0.47058824, g: 0.47058824, b: 0.47058824, a: 0.92156863}
   activeColor: {r: 0, g: 1, b: 0.015686275, a: 1}

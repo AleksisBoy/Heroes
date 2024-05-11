@@ -21,7 +21,6 @@ public class CombatMainState : MonoBehaviour
     protected CombatTile selectedTile = null;
     private Vector2 direction;
     protected List<CombatTile> activeTiles = null;
-
     protected CombatTile actingUnitTile = null;
     public CombatTile ActingUnitTile => actingUnitTile;
     protected bool isActive = false;
@@ -74,6 +73,7 @@ public class CombatMainState : MonoBehaviour
         {
             selectedTile = null;
             canvasUnitUtility?.ResetSelection();
+            InternalSettings.SwitchCursorTo(InternalSettings.CursorState.Busy);
 
             buttonDefense.interactable = false;
             buttonSurrender.interactable = false;

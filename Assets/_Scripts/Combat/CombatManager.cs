@@ -209,7 +209,7 @@ public class CombatManager : MonoBehaviour
     }
     private IEnumerator Attack(CombatUnit attackingUnit, CombatUnit defendingUnit, Vector2 pressDirection, List<CombatTile> activeTiles)
     {
-        CombatTile adjacentTile = map.GetAdjacentTileInDirectionWithin(map.GetUnitTile(defendingUnit.Container), activeTiles, pressDirection, map.GetUnitTile(attackingUnit.Container));
+        CombatTile adjacentTile = map.GetAdjacentTileInDirectionWithin(map.GetUnitTile(defendingUnit.Container), activeTiles, pressDirection, map.GetUnitTile(attackingUnit.Container), out float angle);
 
         yield return MoveUnit(attackingUnit, adjacentTile, activeTiles);
 
@@ -265,7 +265,7 @@ public class CombatManager : MonoBehaviour
         DestroyUnit(defendingUnit);
         CheckCombatState();
     }
-    private int GetDamage(CombatUnit attackingUnit, CombatUnit defendingUnit)
+    private static int GetDamage(CombatUnit attackingUnit, CombatUnit defendingUnit)
     {
         int randomDamage = UnityEngine.Random.Range(attackingUnit.Container.Data.DamageRange.x, attackingUnit.Container.Data.DamageRange.y + 1);
         int damage = attackingUnit.Container.Count * randomDamage;
@@ -279,6 +279,26 @@ public class CombatManager : MonoBehaviour
             damage = (int)Mathf.Floor(damage / (1 + 0.05f * (defendingUnit.Container.Data.Defense - attackingUnit.Container.Data.Attack)));
         }
         return damage;
+    }
+    public static Vector2Int GetDamageRange(CombatUnit attackingUnit, CombatUnit defendingUnit)
+    {
+        Vector2Int damageRange = new Vector2Int();
+        int damageLow = attackingUnit.Container.Count * attackingUnit.Container.Data.DamageRange.x;
+        int damageHigh = attackingUnit.Container.Count * attackingUnit.Container.Data.DamageRange.y;
+
+        if (attackingUnit.Container.Data.Attack >= defendingUnit.Container.Data.Defense)
+        {
+            damageLow = (int)Mathf.Floor(damageLow * (1 + 0.05f * (attackingUnit.Container.Data.Attack - defendingUnit.Container.Data.Defense)));
+            damageHigh = (int)Mathf.Floor(damageHigh * (1 + 0.05f * (attackingUnit.Container.Data.Attack - defendingUnit.Container.Data.Defense)));
+        }
+        else
+        {
+            damageLow = (int)Mathf.Floor(damageLow / (1 + 0.05f * (defendingUnit.Container.Data.Defense - attackingUnit.Container.Data.Attack)));
+            damageHigh = (int)Mathf.Floor(damageHigh / (1 + 0.05f * (defendingUnit.Container.Data.Defense - attackingUnit.Container.Data.Attack)));
+        }
+        damageRange.x = damageLow;
+        damageRange.y = damageHigh;
+        return damageRange;
     }
     private void DestroyUnit(CombatUnit unit)
     {

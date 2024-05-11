@@ -296,26 +296,42 @@ public class CombatMap : MonoBehaviour
         }
         return enemyUnitTiles;
     }
-    public CombatTile GetAdjacentTileInDirectionWithin(CombatTile centerTile, List<CombatTile> tileRange, Vector2 direction, CombatTile thisUnitTile)
+    private List<CombatTile> GetAdjacentTiles(CombatTile tile)
+    {
+        List<CombatTile> adjacentTiles = new List<CombatTile>();
+        foreach(var direction in DirectionsAdjacent)
+        {
+            CombatTile adjacentTile = GetByCoors(tile.Coordinates + direction);
+            if(adjacentTile) adjacentTiles.Add(adjacentTile);
+        }
+        return adjacentTiles;
+    }
+    public CombatTile GetAdjacentTileInDirectionWithin(CombatTile centerTile, List<CombatTile> tileRange, Vector2 direction, CombatTile thisUnitTile, out float angle)
     {
         if (thisUnitTile) tileRange.Add(thisUnitTile);
-        float angle = (Mathf.Atan2(direction.y, direction.x) + Mathf.PI) / (2 * Mathf.PI); // value of 0 to 1
+        angle = Mathf.Clamp01((Mathf.Atan2(direction.y, direction.x) + Mathf.PI) / (2 * Mathf.PI)); // value of 0 to 1
         CombatTile adjacentTile = null;
+        List<CombatTile> adjacentTilesLeft = GetAdjacentTiles(centerTile);
         float currentValue = 0.0625f;
         int i = 0;
-        while (adjacentTile == null)
+        int incrementer = 1;
+        while (adjacentTilesLeft.Count > 0)
         {
             bool left = false;
             float topValue = currentValue + 0.125f;
             if (topValue > 1f) topValue -= 1f;
+            // special case for left direction
             if(currentValue >= 0.9375f || currentValue < 0.0625f)
             {
                 i = 7;
                 left = true;
             }
+
+            // General case for other directions
             if ((angle >= currentValue && angle < topValue) || left)
             {
                 if (left) left = false;
+
                 CombatTile tile = GetByCoors(centerTile.Coordinates.x + DirectionsAdjacent[i].x, centerTile.Coordinates.y + DirectionsAdjacent[i].y);
                 if (tile && tileRange.Contains(tile) && !tile.Unit)
                 {
@@ -329,6 +345,7 @@ public class CombatMap : MonoBehaviour
                 }
                 else
                 {
+                    if(adjacentTilesLeft.Contains(tile)) adjacentTilesLeft.Remove(tile);
                     // lowest distance to closest and active tile
                     float diff1 = Mathf.Abs(angle - currentValue);
                     float diff2 = Mathf.Abs(angle - topValue);
@@ -338,7 +355,10 @@ public class CombatMap : MonoBehaviour
                         if (angle < 0f) angle += 1f;
                         currentValue -= 0.125f;
                         if (currentValue < 0f) currentValue += 1f;
-                        if (--i < 0) i = 7;
+
+                        incrementer = -1;
+                        i += incrementer;
+                        if (i < 0) i = 7;
                     }
                     else
                     {
@@ -347,20 +367,20 @@ public class CombatMap : MonoBehaviour
                         currentValue += 0.125f;
                         if (currentValue > 1f) currentValue -= 1f;
 
-                        if (++i > 7) i = 0;
+                        incrementer = 1;
+                        i += incrementer;
+                        if (i > 7) i = 0;
                     }
-                    //i = 0;
-                    //currentValue = 0.0625f;
+
                     continue;
                 }
             }
             currentValue += 0.125f;
             if (currentValue > 1f) currentValue -= 1f;
-            if (++i > 7)
-            {
-                Debug.LogError("NO ADJACENT TILES");
-                break;
-            }
+
+            i += incrementer;
+            if (i > 7) i = 0;
+            else if (i < 0) i = 7;
         }
         
         return adjacentTile;
