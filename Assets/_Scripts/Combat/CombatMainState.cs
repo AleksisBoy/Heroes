@@ -19,29 +19,16 @@ public class CombatMainState : MonoBehaviour
 
     protected CombatPlayerTurnInput playerInput = null;
     protected CombatMap map = null;
-    private Vector2 direction;
     protected List<CombatTile> activeTiles = null;
     protected CombatTile actingUnitTile = null;
     public CombatTile ActingUnitTile => actingUnitTile;
     protected bool isActive = false;
+    private CombatTile forcedAttackTile = null;
     protected virtual void Update()
     {
         if (isActive)
         {
-            var selection = canvasUnitUtility.HighlightSelection(activeTiles, actingUnitTile, out bool selectedTileIsAdjacent);
-            if (!selection.Item1) return;
-
-            if (selection.Item1.Unit && selection.Item1 != actingUnitTile) canvasUnitUtility.PreviewMovementTiles(selection.Item1, new List<CombatTile>());
-            else canvasUnitUtility.ResetLastPreviewTiles();
-
-            if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject())
-            {
-                if (activeTiles.Contains(selection.Item1))
-                {
-                    if (selectedTileIsAdjacent) playerInput = CombatPlayerTurnInput.Attack(selection.Item1, selection.Item2);
-                    else playerInput = CombatPlayerTurnInput.Move(selection.Item1);
-                }
-            }
+            ActiveMainStateProcess();
         }
 
         // can check unit popup either if isActive or no
@@ -54,10 +41,42 @@ public class CombatMainState : MonoBehaviour
             canvasUnitUtility.DisableUnitPopup();
         }
     }
+
+    private void ActiveMainStateProcess()
+    {
+        (CombatTile, Vector2) selection = default;
+        bool selectedTileIsAdjacent = false;
+        if (!forcedAttackTile)
+        {
+            selection = canvasUnitUtility.HighlightSelection(activeTiles, actingUnitTile, out selectedTileIsAdjacent);
+        }
+        else // force attack tile through icon ui action
+        {
+            Vector3 direction3D = (actingUnitTile.Unit.transform.position - forcedAttackTile.transform.position).normalized;
+
+            selection.Item2 = new Vector2(direction3D.x, direction3D.z);
+            selection.Item1 = map.GetAdjacentTileInDirectionWithin(forcedAttackTile, activeTiles, selection.Item2, actingUnitTile, out float angle);
+            forcedAttackTile = null;
+        }
+        if (!selection.Item1) return;
+
+        if (selection.Item1.Unit && selection.Item1 != actingUnitTile) canvasUnitUtility.PreviewMovementTiles(selection.Item1, new List<CombatTile>());
+        else canvasUnitUtility.ResetLastPreviewTiles();
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            if (activeTiles.Contains(selection.Item1))
+            {
+                if (selectedTileIsAdjacent) playerInput = CombatPlayerTurnInput.Attack(selection.Item1, selection.Item2);
+                else playerInput = CombatPlayerTurnInput.Move(selection.Item1);
+            }
+        }
+    }
+
     public virtual void StartCombat(CombatManager manager, Player player)
     {
         map = manager.Map;
-        combatATB?.SetupBar(manager);
+        combatATB?.SetupBar(manager, this);
         gameObject.SetActive(true);
         List<CombatUnit> allUnits = map.GetAllUnits();
         canvasUnitUtility.SetAllUnits(allUnits);
@@ -90,13 +109,14 @@ public class CombatMainState : MonoBehaviour
             buttonSkipTurn.interactable = true;
         }
     }
+    public void TryAttackUnitThroughIcon(CombatUnit unitToAttack)
+    {
+        if (!isActive) return;
+        forcedAttackTile = map.GetUnitTile(unitToAttack.Container);
+    }
     public void DeactivateTiles()
     {
         map.DeactivateTiles();
-    }
-    public Vector2 GetSelectedTileDirection()
-    {
-        return direction;
     }
     public CombatPlayerTurnInput GetPlayerInput()
     {

@@ -1,11 +1,14 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class CombatUnitIconUI : IconUI, IPointerEnterHandler, IPointerExitHandler
+public class CombatUnitIconUI : IconUI, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
     public static CombatUnitIconUI HoverOver { get; private set; }
+
+    private Action<CombatUnit> onPointerClick = null;
 
     private CombatUnit unit = null;
     public CombatUnit Unit => unit;
@@ -22,7 +25,19 @@ public class CombatUnitIconUI : IconUI, IPointerEnterHandler, IPointerExitHandle
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if(HoverOver == this)HoverOver = null;
+        if(HoverOver == this) HoverOver = null;
     }
 
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (onPointerClick != null) onPointerClick(unit);
+    }
+    public void AddOnPointerClick(Action<CombatUnit> onPointerClickAction)
+    {
+        onPointerClick += onPointerClickAction;
+    }
+    public void RemovePointerClick(Action<CombatUnit> onPointerClickAction)
+    {
+        onPointerClick -= onPointerClickAction; 
+    }
 }

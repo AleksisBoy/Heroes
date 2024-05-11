@@ -7,15 +7,17 @@ public class CombatATB_UI : MonoBehaviour
 {
     [SerializeField] private RectTransform grid = null;
     [SerializeField] private IconContainerUI currentUnitIcon = null;
-    [SerializeField] private IconUI iconPrefab = null;
+    [SerializeField] private CombatUnitIconUI iconPrefab = null;
     [SerializeField] private IconContainerUI iconContainerPrefab = null;
     [SerializeField] private int iconCount = 10;
 
     private CombatManager manager = null;
-    public void SetupBar(CombatManager manager)
+    private CombatMainState mainState = null;
+    public void SetupBar(CombatManager manager, CombatMainState mainState)
     {
         if (!this.manager) manager.OnProgressATB += UpdateUI;
         this.manager = manager;
+        this.mainState = mainState;
 
         UpdateUI();
     }
@@ -27,7 +29,7 @@ public class CombatATB_UI : MonoBehaviour
         backColor.a = 0.5f;
         currentUnitIcon.Background.color = backColor;
 
-        IconUI current = Instantiate(iconPrefab, currentUnitIcon.transform);
+        CombatUnitIconUI current = Instantiate(iconPrefab, currentUnitIcon.transform);
         current.Set(units[0], currentUnitIcon, false);
     }
     private static Dictionary<float, CombatUnit> GetSortedDictionaryOfUnits(List<CombatUnit> units, int maxIcons)
@@ -69,8 +71,9 @@ public class CombatATB_UI : MonoBehaviour
             rtContainer.anchorMax = new Vector2(0f, 0.5f);
             rtContainer.anchoredPosition = new Vector2((iconContainerPrefab.RT.sizeDelta.x / 2f) + (i * iconContainerPrefab.RT.sizeDelta.x), 0f);
 
-            IconUI icon = Instantiate(iconPrefab, container.transform);
+            CombatUnitIconUI icon = Instantiate(iconPrefab, container.transform);
             icon.Set(list[i], container, false);
+            icon.AddOnPointerClick(mainState.TryAttackUnitThroughIcon);
         }
     }
     private void UpdateUI()
