@@ -180,6 +180,7 @@ public class CombatManager : MonoBehaviour
         else if(playerInput.action == CombatPlayerTurnInput.PlayerAction.Defend)
         {
             Debug.LogError("DEFEND ACTION IS NOT IMPLEMENTED ");
+            actingUnit.ResetATB();
         }
 
         actingUnit = null;
