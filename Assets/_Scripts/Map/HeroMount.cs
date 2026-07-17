@@ -11,7 +11,6 @@ public class HeroMount : MapObject
     [SerializeField] private float moveSpeed = 1f;
     [SerializeField] private GameObject selectionCircle = null;
     [SerializeField] private Unit[] debugUnits = null;
-    //public bool ai = false;
 
     private Player player;
     private UnitContainer[] units = new UnitContainer[7];
@@ -25,6 +24,7 @@ public class HeroMount : MapObject
     public Player Player { get { return player; } }
     public Hero Hero { get { return hero; } }
     public UnitContainer[] Units { get { return units; } }
+
     private void Start()
     {
         EnableSelectionVisual(false);
@@ -32,6 +32,7 @@ public class HeroMount : MapObject
     public override void Setup(Point startPoint)
     {
         hero = Hero.CreateInstanceOf(hero);
+        units = new UnitContainer[7];
         currentLocation = startPoint;
         transform.position = startPoint.Position;
         SpawnStarterUnit();
@@ -41,10 +42,11 @@ public class HeroMount : MapObject
         this.player = player;
         Setup(startPoint);
     }
-    public void SpawnStarterUnit() // debug
+    public void SpawnStarterUnit() // used for debug
     {
-        UnitContainer unit = new UnitContainer(hero.starterUnit, hero.starterUnitCount, playerDebug);
-        units[0] = unit;
+        Debug.Log(name);
+        UnitContainer unit0 = new UnitContainer(hero.starterUnit, hero.starterUnitCount, playerDebug);
+        units[0] = unit0;
         UnitContainer unit1 = new UnitContainer(hero.starterUnit, hero.starterUnitCount + 5, playerDebug);
         units[1] = unit1;
         UnitContainer unit2 = new UnitContainer(hero.starterUnit, hero.starterUnitCount + 10, playerDebug);
@@ -155,7 +157,7 @@ public class HeroMount : MapObject
     }
     public void EnableSelectionVisual(bool state)
     {
-        selectionCircle.SetActive(state);
+        selectionCircle?.SetActive(state);
     }
     public UnitContainer GetUnitContainerFromIconData(IconData data)
     {
@@ -186,5 +188,9 @@ public class HeroMount : MapObject
     public void Debug_SetPlayer(Player player)
     {
         this.player = player;
+    }
+    public void Debug_SetUnits(UnitContainer[] units)
+    {
+        this.units = units;
     }
 }

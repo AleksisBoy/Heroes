@@ -181,9 +181,9 @@ public class CanvasUnitUtility : MonoBehaviour
     }
     public (CombatTile, Vector2) SelectTileOnPointer()
     {
-        Heroes_StandaloneInputModule sim = EventSystem.current.currentInputModule as Heroes_StandaloneInputModule; 
-        if (sim.GetCurrent()
-            && sim.GetCurrent().layer == LayerMask.NameToLayer("UI")) return (null, Vector2.zero);
+        HeroesInputModule sim = EventSystem.current.currentInputModule as HeroesInputModule; 
+        if (sim.GetFocused()
+            && sim.GetFocused().layer == LayerMask.NameToLayer("UI")) return (null, Vector2.zero);
 
         Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hitInfo);
         if (hitInfo.transform == null) return (null, Vector2.zero);

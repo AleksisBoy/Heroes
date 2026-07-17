@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using UnityEngine;
 
@@ -34,6 +33,7 @@ public class Path
     }
     private void BuildPathToEndPoint()
     {
+        Debug.Log("build");
         // setting up start point
         PointPathData startPointData = new PointPathData()
         {
@@ -118,9 +118,7 @@ public class Path
     {
         pathPoints.Remove(pathPoints.ElementAt(0).Key);
     }
-    /// <summary>
-    /// Returns null
-    /// </summary>
+
     public Path DestroySelf() 
     {
         foreach(GameObject go in pathMarkers)

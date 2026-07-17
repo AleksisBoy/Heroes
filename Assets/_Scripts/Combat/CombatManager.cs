@@ -38,15 +38,25 @@ public class CombatManager : MonoBehaviour
     private int round = 0;
     public float GameTime => time;
     public int Round => round;
+    private bool set = false;
 
+    public void SetCombat(HeroMount attacker, HeroMount defender)
+    {
+        Debug.Log(string.Format("Combat set with {0} - {1}//{2} - {3}", attacker.name, attacker.Player, defender.name, defender.Player));
+        attackingHero = attacker;
+        attackingPlayer = attacker.Player;
+        defendingHero = defender;
+        defendingPlayer = defender.Player;
+        set = true;
+    }
     public void StartMatch(HeroMount attacker, HeroMount defender)
     {
         round = 1;
         time = 0f;
         state = CombatState.Preparation;
 
-        defender.SpawnStarterUnit();
-        attacker.SpawnStarterUnit();
+        //defender.SpawnStarterUnit();
+        //attacker.SpawnStarterUnit();
 
         attackingPlayer.StartCombatPreparation(this, attacker, map, true);
         defendingPlayer.StartCombatPreparation(this, defender, map, false);
@@ -55,7 +65,11 @@ public class CombatManager : MonoBehaviour
     }
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.O))
+        if (round == 0 && Input.GetKeyDown(KeyCode.O))
+        {
+            StartMatch(attackingHero, defendingHero);
+        }
+        if (set == true && round == 0 && map.tilesCreated)
         {
             StartMatch(attackingHero, defendingHero);
         }

@@ -177,22 +177,6 @@ public class MapNavigator : ManageableBehaviour
 
         Point selectedPoint;
 
-        //City city = hit.transform.GetComponent<City>();
-        //if (city)
-        //{
-        //    if(city == lastCityClicked)
-        //    {
-        //        city.en
-        //    }
-        //}
-        //HeroMount heroMount = hit.transform.GetComponentInParent<HeroMount>();
-        //if (heroMount)
-        //{
-        //    Debug.Log(heroMount.name);
-        //    selectedPoint = heroMount.CurrentLocation;
-        //    return;
-        //}
-
         MapObject mapObject = hit.transform.GetComponent<MapObject>();
         if (mapObject)
         {
@@ -205,10 +189,7 @@ public class MapNavigator : ManageableBehaviour
             selectedPoint = map.GetClosestPointInChunk(mousePos, GetChunk(mousePos));
         }
 
-
-
         // Move hero on path
-
         if (lastClickedPoint == selectedPoint)
         {
             if (path != null)
@@ -263,5 +244,13 @@ public class MapNavigator : ManageableBehaviour
     {
         yield return null;
         //selectedHeroMount.UpdatePath(pointObject);
+    }
+    private void OnDisable()
+    {
+        targetView?.gameObject.SetActive(false);
+    }
+    private void OnEnable()
+    {
+        targetView?.gameObject.SetActive(true);
     }
 }

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -16,6 +17,7 @@ public class GameManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+        DontDestroyOnLoad(gameObject);
     }
     private void Start()
     {
@@ -60,5 +62,19 @@ public class GameManager : MonoBehaviour
     private void EndDay()
     {
         ProceedToNextDay();
+    }
+    public IEnumerator StartCombatSequence(HeroMount attacker, HeroMount defender)
+    {
+        SceneManager.LoadScene("Combat", LoadSceneMode.Additive);
+        CombatManager manager = FindObjectOfType<CombatManager>();
+        while (manager == null)
+        {
+            manager = FindObjectOfType<CombatManager>();
+            Debug.Log("tring");
+            yield return null;
+        }
+        manager.SetCombat(attacker, defender);
+        attacker.Player.SwitchToCombat();
+        defender.Player.SwitchToCombat();
     }
 }

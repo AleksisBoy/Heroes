@@ -1,11 +1,9 @@
-using Palmmedia.ReportGenerator.Core.Reporting.Builders;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.XR;
 
 public class CombatMap : MonoBehaviour
 {
@@ -14,6 +12,7 @@ public class CombatMap : MonoBehaviour
     [SerializeField] private Vector2Int mapSize = Vector2Int.zero;
     [SerializeField] private float tileScale = 3;
 
+    public bool tilesCreated = false;
     private Action<CombatUnit> onRemoveUnit;
     private Vector3 middlePos;
     public Vector3 MiddlePosition => middlePos;
@@ -40,24 +39,23 @@ public class CombatMap : MonoBehaviour
     });
     private void Start()
     {
-        middlePos = new Vector3(terrain.terrainData.size.x / 2, 0, terrain.terrainData.size.z / 2);
+        middlePos = new Vector3(terrain.terrainData.size.x / 2, terrain.transform.position.y, terrain.terrainData.size.z / 2);
 
         CreateTiles();
 
-        Vector3 attackerPosition = new Vector3(middlePos.x - mapSize.x - tileScale * 2, 0f, middlePos.z + mapSize.y + tileScale * 2);
+        Vector3 attackerPosition = new Vector3(middlePos.x - mapSize.x - tileScale * 2, terrain.transform.position.y, middlePos.z + mapSize.y + tileScale * 2);
         GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
         go.transform.position = attackerPosition;
     }
 
     private void CreateTiles()
     {
-        
         for (float x = tileScale; x < mapSize.x * tileScale + tileScale; x += tileScale)
         {
             for (float y = tileScale; y < mapSize.y * tileScale + tileScale; y += tileScale)
             {
                 CombatTile tile = Instantiate(tilePrefab);
-                tile.transform.position = new Vector3(middlePos.x - (mapSize.x / 2) * tileScale + x, 0.01f,
+                tile.transform.position = new Vector3(middlePos.x - (mapSize.x / 2) * tileScale + x, terrain.transform.position.y + 0.01f,
                     middlePos.z - (mapSize.y / 2) * tileScale + y);
                 tile.transform.localScale *= tileScale;
                 tile.name = x / tileScale + ":" + y / tileScale;
@@ -66,6 +64,7 @@ public class CombatMap : MonoBehaviour
                 tiles.Add(tile);
             }
         }
+        tilesCreated = true;
     }
     public void DeactivateTiles()
     {
@@ -461,7 +460,6 @@ public class CombatMap : MonoBehaviour
                     neighbour.hCost = hCost;
                     neighbour.fCost = gCost + hCost;
                     neighbour.parentTile = current;
-                    //neighbour.UpdateState(CombatTile.State.Highlight);
                     neighbour.AddState(CombatTile.State.Highlight);
                     if (!openTiles.Contains(neighbour)) openTiles.Add(neighbour);
                 }

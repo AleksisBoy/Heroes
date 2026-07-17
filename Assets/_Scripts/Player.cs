@@ -7,6 +7,8 @@ public class Player : MonoBehaviour
 {
     [SerializeField] private Map map = null;
     [SerializeField] private Color playerColor = Color.red;
+    [SerializeField] private MapNavigator navigator = null;
+    [SerializeField] private UserInterface userInterface = null;
     [SerializeField] private List<HeroMount> heroes = new List<HeroMount>();
     [SerializeField] private CombatPreparation combatPreparation = null;
     [SerializeField] protected CombatMainState combatMainState = null;
@@ -57,7 +59,7 @@ public class Player : MonoBehaviour
             return;
         }
 
-        hero.Debug_SetPlayer(this);
+        //hero.Debug_SetPlayer(this);
 
         if (currentState != null) currentState.SetActive(false);
         combatPreparation.StartPreparation(manager, hero, map, attacker);
@@ -105,6 +107,17 @@ public class Player : MonoBehaviour
         combatEnding.StartEnding(winner == this ? true : false, myCasualties, opponentCasualties);
         currentState = combatMainState.gameObject;
     }
+    public virtual void SwitchToCombat()
+    {
+        navigator.gameObject.SetActive(false);
+        userInterface.gameObject.SetActive(false);
+        Debug.Log("switch to combat");
+    }
+    public virtual void SwitchToAdventure()
+    {
+        navigator.gameObject.SetActive(true);
+        userInterface.gameObject.SetActive(true);
+    }
     public bool IsAllyHero(HeroMount hero)
     {
         foreach (HeroMount mount in heroes)
@@ -115,5 +128,9 @@ public class Player : MonoBehaviour
             }
         }
         return false;
+    }
+    public void AddHeroMount(HeroMount hero)
+    {
+        if(!heroes.Contains(hero)) heroes.Add(hero);
     }
 }

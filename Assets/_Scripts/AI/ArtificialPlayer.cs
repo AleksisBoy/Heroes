@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class ArtificialPlayer : Player
 {
@@ -43,5 +45,14 @@ public class ArtificialPlayer : Player
             }
             yield return null;
         }
+    }
+
+    public override void SwitchToCombat()
+    {
+        //
+    }
+    public override void SwitchToAdventure()
+    {
+        //
     }
 }

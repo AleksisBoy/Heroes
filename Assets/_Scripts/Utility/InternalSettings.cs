@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class InternalSettings : MonoBehaviour
 {
+    [SerializeField] private ArtificialPlayer artificialPlayerPrefab = null;
     [Header("Cursors")]
     [SerializeField] private List<CursorHeroes> cursors = new List<CursorHeroes>();
     [Header("Combat Tiles")]
@@ -21,6 +22,7 @@ public class InternalSettings : MonoBehaviour
     [Header("Colors Trio State")]
     [SerializeField] private Color activeSelectedPreviewColor = Color.white;
 
+    private ArtificialPlayer artificialPlayer;
     public static CursorHeroes CurrentCursor { get; private set; } = default;
     public static InternalSettings Get { get; private set; } = null;
     private void Awake()
@@ -77,5 +79,22 @@ public class InternalSettings : MonoBehaviour
         AttackingTopRight,
         AttackingTop,
         AttackingTopLeft,
+    }
+    public HeroMount NeutralHero
+    {
+        get
+        {
+            GameObject go = new GameObject();
+            go.name = "Neutral HeroMount";
+            HeroMount heroMount = go.AddComponent<HeroMount>();
+            return heroMount;
+        }
+    }
+    public ArtificialPlayer ArtificialPlayer
+    {
+        get
+        {
+            return artificialPlayerPrefab;
+        }
     }
 }
